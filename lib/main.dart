@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:english_words/english_words.dart';
+import 'package:tech_terms/Term.dart';
+import 'package:tech_terms/database.dart';
 
 void main() => runApp(new MyApp());
 
@@ -11,25 +12,40 @@ class MyApp extends StatelessWidget {
       theme: new ThemeData(
         primaryColor: Colors.amber,
       ),
-      home: new RandomWords(),
+      home: new TermDictionary(),
     );
   }
 }
 
-class RandomWords extends StatefulWidget {
-  @override
-  createState() => new RandomWordsState();
+@override
+void initState() {
+  super.initState();
+  bookState = widget.book;
+  BookDatabase.get().getBook(widget.book.id)
+      .then((book){
+    if (book == null) return;
+    setState((){
+      bookState = book;
+    });
+  });
+
 }
 
-class RandomWordsState extends State<RandomWords> {
-  final _suggestions = <WordPair>[];
+class TermDictionary extends StatefulWidget {
+  @override
+  createState() => new TermDictionaryState();
+}
+
+class TermDictionaryState extends State<TermDictionary> {
+  final List<Term> terms = TermDatabase.getAllTerms();
   final _saved = new Set<WordPair>();
   final _biggerFont = const TextStyle(fontSize: 18.0);
 
   Widget _buildSuggestions() {
     return new ListView.builder(
         padding: const EdgeInsets.all(16.0),
-        itemBuilder: (context, i) {
+        children:
+        /*itemBuilder: (context, i) {
           // Add a one-pixel-high divider widget before each row in theListView.
           if (i.isOdd) return new Divider();
 
@@ -40,7 +56,7 @@ class RandomWordsState extends State<RandomWords> {
             _suggestions.addAll(generateWordPairs().take(10));
           }
           return _buildRow(_suggestions[index]);
-        });
+        }*/);
   }
 
   Widget _buildRow(WordPair pair) {
