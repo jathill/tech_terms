@@ -17,19 +17,6 @@ class MyApp extends StatelessWidget {
   }
 }
 
-@override
-void initState() {
-  super.initState();
-  bookState = widget.book;
-  BookDatabase.get().getBook(widget.book.id)
-      .then((book){
-    if (book == null) return;
-    setState((){
-      bookState = book;
-    });
-  });
-
-}
 
 class TermDictionary extends StatefulWidget {
   @override
@@ -37,94 +24,54 @@ class TermDictionary extends StatefulWidget {
 }
 
 class TermDictionaryState extends State<TermDictionary> {
-  final List<Term> terms = TermDatabase.getAllTerms();
-  final _saved = new Set<WordPair>();
+  List<Term> terms = new List();
   final _biggerFont = const TextStyle(fontSize: 18.0);
 
-  Widget _buildSuggestions() {
-    return new ListView.builder(
-        padding: const EdgeInsets.all(16.0),
-        children:
-        /*itemBuilder: (context, i) {
-          // Add a one-pixel-high divider widget before each row in theListView.
-          if (i.isOdd) return new Divider();
-
-          final index = i ~/ 2;
-          // If you've reached the end of the available word pairings...
-          if (index >= _suggestions.length) {
-            // ...then generate 10 more and add them to the suggestions list.
-            _suggestions.addAll(generateWordPairs().take(10));
-          }
-          return _buildRow(_suggestions[index]);
-        }*/);
-  }
-
-  Widget _buildRow(WordPair pair) {
-    final alreadySaved = _saved.contains(pair);
-    return new ListTile(
-      title: new Text(
-        pair.asPascalCase,
-        style: _biggerFont,
-      ),
-      trailing: new Icon(
-        alreadySaved ? Icons.favorite : Icons.favorite_border,
-        color: alreadySaved ? Colors.red : null,
-      ),
-      onTap: () {
-        setState(() {
-          if (alreadySaved) {
-            _saved.remove(pair);
-          } else {
-            _saved.add(pair);
-          }
+  @override
+  void initState() {
+    super.initState();
+    TermDatabase.get().init();
+    TermDatabase.get().getAllTerms()
+      .then((dbTerms){
+        if (dbTerms == null) return;
+        setState((){
+          terms = dbTerms;
+          print("Hey in here");
         });
-      },
-    );
-
+    });
+    print("Hey poopy diaper");
+    print(terms);
   }
 
   @override
   Widget build(BuildContext context) {
     return new Scaffold (
       appBar: new AppBar(
-        title: new Text('Startup Name Generator'),
-        actions: <Widget>[
-          new IconButton(icon: new Icon(Icons.list), onPressed: _pushSaved),
-        ],
+        title: new Text('TechTerms'),
       ),
       body: _buildSuggestions(),
     );
   }
 
-  void _pushSaved() {
-    Navigator.of(context).push(
-      new MaterialPageRoute(
-        builder: (context) {
-          final tiles = _saved.map(
-                (pair) {
-              return new ListTile(
-                title: new Text(
-                  pair.asPascalCase,
-                  style: _biggerFont,
-                ),
-              );
-            },
-          );
-          final divided = ListTile
-              .divideTiles(
-            context: context,
-            tiles: tiles,
-          )
-              .toList();
+  Widget _buildSuggestions() {
+    return new ListView.builder(
+        padding: const EdgeInsets.all(16.0),
+        itemCount: terms.length * 2,
+        itemBuilder: (context, i) {
+          // Add a one-pixel-high divider widget before each row in theListView.
+          if (i.isOdd) return new Divider();
+          final index = i ~/ 2;
+          return _buildRow(terms[index]);
+        });
+  }
 
-          return new Scaffold(
-            appBar: new AppBar(
-              title: new Text('Saved Suggestions'),
-            ),
-            body: new ListView(children: divided),
-          );
-        },
+  Widget _buildRow(Term t) {
+    return new ListTile(
+      title: new Text(
+        t.name,
+        style: _biggerFont,
       ),
     );
+
   }
 }

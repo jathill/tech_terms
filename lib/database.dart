@@ -48,6 +48,9 @@ class TermDatabase {
                   "${Term.db_year} INTEGER"
                   ")");
         });
+    await addTermsFromFile().then((termList) {
+      termList.forEach((t) => updateTerm(t));
+    });
     didInit = true;
   }
 
@@ -63,16 +66,27 @@ class TermDatabase {
   Future<List<Term>> getAllTerms() async{
     var db = await _getDb();
     var result = await db.rawQuery('SELECT * FROM $tableName');
-    List<Term> books = [];
+    List<Term> dbTerms = [];
     for(Map<String, dynamic> item in result) {
-      books.add(new Term.fromMap(item));
+      dbTerms.add(new Term.fromMap(item));
     }
-    return books;
+    return dbTerms;
+  }
+  
+  Future<List<Term>> addTermsFromFile() async {
+    Term term1 = new Term(name: "C#",
+        definition: "High level programming language within the .NET framework.",
+        id: "1", maker: "Microsoft", year: 2000);
+    Term term2 = new Term(name: "Ruby on Rails",
+        definition: "Server-side web application framework written in Ruby.",
+        id: "2", maker: "David Heinemmeier Hansson", year: 2005);
+
+    return [term1, term2];
   }
 
   //TODO escape not allowed characters eg. ' " '
   /// Inserts or replaces the book.
-  Future updateBook(Term term) async {
+  Future updateTerm(Term term) async {
     var db = await _getDb();
     await db.rawInsert(
         'INSERT OR REPLACE INTO '

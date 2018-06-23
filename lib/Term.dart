@@ -26,8 +26,8 @@ class Term {
   static final db_name = "Name";
   static final db_definition = "Definition";
   static final db_id = "id";
-  static final db_maker = "Author/Origin";
-  static final db_year = "Year Created";
+  static final db_maker = "Creator";
+  static final db_year = "Year_Created";
   //static final db_tags = "Tags";
   //static final db_related = "Related";
 
@@ -50,7 +50,7 @@ class Term {
   Term.fromMap(Map<String, dynamic> map): this(
     name: map[db_name],
     definition: map[db_definition],
-    id: map[db_id],
+    id: map[db_id].toString(),
     maker: map[db_maker],
     year: map[db_year],
     //tags: map[db_tags],
