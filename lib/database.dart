@@ -24,7 +24,13 @@ class TermDatabase {
 
   /// Use this method to access the database, because initialization of the database (it has to go through the method channel)
   Future<Database> _getDb() async{
+    print(didInit);
     if(!didInit) await _init();
+    else {
+      await addTermsFromFile().then((termList) {
+        termList.forEach((t) => updateTerm(t));
+      });
+    }
     return db;
   }
 
@@ -80,14 +86,16 @@ class TermDatabase {
     Term term2 = new Term(name: "Ruby on Rails",
         definition: "Server-side web application framework written in Ruby.",
         id: "2", maker: "David Heinemmeier Hansson", year: 2005);
+    Term term3 = new Term(name: "SQL",
+        definition: "see Structured Query Language",
+        id: "3");
 
-    return [term1, term2];
+    return [term1, term2, term3];
   }
 
   //TODO escape not allowed characters eg. ' " '
   /// Inserts or replaces the book.
   Future updateTerm(Term term) async {
-    var db = await _getDb();
     await db.rawInsert(
         'INSERT OR REPLACE INTO '
             '$tableName(${Term.db_id}, ${Term.db_name}, ${Term.db_definition}, ${Term.db_maker}, ${Term.db_year})'
