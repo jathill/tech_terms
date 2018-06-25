@@ -29,11 +29,13 @@ class TermDictionaryState extends State<TermDictionary> {
   @override
   void initState() {
     super.initState();
-    TermDatabase.get().init();
-    TermDatabase.get().getAllTerms().then((dbTerms) {
-      if (dbTerms == null) return;
-      setState(() {
-        terms = dbTerms;
+    var db = TermDatabase.get();
+    db.init().then((context) {
+      db.getAllTerms().then((dbTerms) {
+        if (dbTerms == null) return;
+        setState(() {
+          terms = dbTerms;
+        });
       });
     });
   }

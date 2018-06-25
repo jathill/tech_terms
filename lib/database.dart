@@ -24,13 +24,7 @@ class TermDatabase {
 
   /// Use this method to access the database, because initialization of the database (it has to go through the method channel)
   Future<Database> _getDb() async{
-    print(didInit);
     if(!didInit) await _init();
-    else {
-      await addTermsFromFile().then((termList) {
-        termList.forEach((t) => updateTerm(t));
-      });
-    }
     return db;
   }
 
@@ -89,8 +83,11 @@ class TermDatabase {
     Term term3 = new Term(name: "SQL",
         definition: "see Structured Query Language",
         id: "3");
+    Term term4 = new Term(name: "Git",
+        definition: "Version control system for tracking changes in files. Primarily used for source code management.",
+        id: "4", maker: "Linus Torvalds", year: 2005);
 
-    return [term1, term2, term3];
+    return [term1, term2, term3, term4];
   }
 
   //TODO escape not allowed characters eg. ' " '
