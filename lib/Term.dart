@@ -31,7 +31,6 @@ class Term {
   //static final db_tags = "Tags";
   //static final db_related = "Related";
 
-
   String name, id, definition, maker;
   int year;
   //List<Tag> tags;
@@ -47,14 +46,22 @@ class Term {
     //this.related,
   });
 
-  Term.fromMap(Map<String, dynamic> map): this(
-    name: map[db_name],
-    definition: map[db_definition],
-    id: map[db_id].toString(),
-    maker: map[db_maker],
-    year: map[db_year],
-    //tags: map[db_tags],
-    //related: map[db_related],
-  );
+  factory Term.fromJson(Map<String, dynamic> json) {
+    var term = Term(
+        name: json['name'], definition: json['definition'], id: json['id']);
+    if (json.containsKey("maker")) term.maker = json['maker'];
+    if (json.containsKey("year")) term.year = json['year'];
+    return term;
+  }
 
+  Term.fromMap(Map<String, dynamic> map)
+      : this(
+          name: map[db_name],
+          definition: map[db_definition],
+          id: map[db_id].toString(),
+          maker: map[db_maker],
+          year: map[db_year],
+          //tags: map[db_tags],
+          //related: map[db_related],
+        );
 }

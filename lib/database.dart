@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:http/http.dart' as http;
 import 'package:tech_terms/Term.dart';
 
 
@@ -48,7 +50,10 @@ class TermDatabase {
                   "${Term.db_year} INTEGER"
                   ")");
         });
-    await addTermsFromFile().then((termList) {
+//    await addTermsFromFile().then((termList) {
+//      termList.forEach((t) => updateTerm(t));
+//    });
+    await addTermsFromDB().then((termList) {
       termList.forEach((t) => updateTerm(t));
     });
     didInit = true;
@@ -71,6 +76,19 @@ class TermDatabase {
       dbTerms.add(new Term.fromMap(item));
     }
     return dbTerms;
+  }
+
+  Future<List<Term>> addTermsFromDB() async {
+    final url = 'https://tech-terms.herokuapp.com/get_terms';
+
+    var terms = await http.get(url).then((response) {
+      List<Term> termList =[];
+      json.decode(response.body).forEach((termJson) {
+        termList.add(Term.fromJson(termJson));
+      });
+      return termList;
+    });
+    return terms;
   }
   
   Future<List<Term>> addTermsFromFile() async {
