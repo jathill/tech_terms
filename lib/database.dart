@@ -48,16 +48,50 @@ class TermDatabase {
                   "${Term.db_definition} TEXT,"
                   "${Term.db_maker} TEXT,"
                   "${Term.db_year} INTEGER"
-                  ")");
-        });
-//    await addTermsFromFile().then((termList) {
-//      termList.forEach((t) => updateTerm(t));
-//    });
-    await addTermsFromDB().then((termList) {
-      termList.forEach((t) => updateTerm(t));
+                  ")").then((context) => print("db created"));
+        }).then((context) {
+          print("db opened");
+          return context;
     });
+
+    final versionPath = await getApplicationDocumentsDirectory().then((dir) {
+      return dir.path;
+    });
+    final versionFile = File('$versionPath/version.txt');
+
+    int serverVersion = await getServerVersion();
+    int localVersion = await getLocalVersion(versionFile);
+    print("Server version $serverVersion; Local version $localVersion");
+
+    if (serverVersion == -1) print("Error: Could not contact server");
+    else if (serverVersion != localVersion) {
+      await addTermsFromServer().then((termList) {
+        termList.forEach((t) => updateTerm(t));
+      });
+      versionFile.writeAsString("$serverVersion");
+    }
+
     didInit = true;
   }
+
+  Future<int> getServerVersion() async {
+    final url = 'https://tech-terms.herokuapp.com/get_version';
+    return await http.get(url).then((response) {
+      if (response.statusCode != 200) return -1;
+      return json.decode(response.body)["version"];
+    });
+  }
+
+  Future<int> getLocalVersion(File file) async {
+    try {
+      String contents = await file.readAsString();
+      return int.parse(contents);
+    } catch (FileSystemException) {
+      return 0;
+    }
+
+  }
+
 
   /// Get a book by its id, if there is not entry for that ID, returns null.
   Future<Term> getTerm(String id) async{
@@ -67,7 +101,7 @@ class TermDatabase {
     return new Term.fromMap(result[0]);
   }
 
-  /// Get all terms, will return a list with all the terms
+  /// Get all terms from local database, return a list with all the terms
   Future<List<Term>> getAllTerms() async{
     var db = await _getDb();
     var result = await db.rawQuery('SELECT * FROM $tableName');
@@ -78,10 +112,12 @@ class TermDatabase {
     return dbTerms;
   }
 
-  Future<List<Term>> addTermsFromDB() async {
+  /// Get most recent terms from server and return them in a list
+  Future<List<Term>> addTermsFromServer() async {
     final url = 'https://tech-terms.herokuapp.com/get_terms';
 
     var terms = await http.get(url).then((response) {
+      print("received terms response");
       List<Term> termList =[];
       json.decode(response.body).forEach((termJson) {
         termList.add(Term.fromJson(termJson));
@@ -90,7 +126,8 @@ class TermDatabase {
     });
     return terms;
   }
-  
+
+  /// Get most recent terms from file and return them in a list
   Future<List<Term>> addTermsFromFile() async {
     Term term1 = new Term(name: "C#",
         definition: "High level programming language within the .NET framework.",
