@@ -7,7 +7,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:tech_terms/Term.dart';
 
-
 class TermDatabase {
   static final TermDatabase _termDatabase = new TermDatabase._internal();
 
@@ -23,10 +22,9 @@ class TermDatabase {
 
   TermDatabase._internal();
 
-
   /// Use this method to access the database, because initialization of the database (it has to go through the method channel)
-  Future<Database> _getDb() async{
-    if(!didInit) await _init();
+  Future<Database> _getDb() async {
+    if (!didInit) await _init();
     return db;
   }
 
@@ -40,36 +38,45 @@ class TermDatabase {
     String path = join(documentsDirectory.path, "techTerms.db");
     db = await openDatabase(path, version: 1,
         onCreate: (Database db, int version) async {
-          // When creating the db, create the table
-          await db.execute(
-              "CREATE TABLE $tableName ("
-                  "${Term.db_id} STRING PRIMARY KEY,"
-                  "${Term.db_name} TEXT,"
-                  "${Term.db_definition} TEXT,"
-                  "${Term.db_maker} TEXT,"
-                  "${Term.db_year} INTEGER"
-                  ")").then((context) => print("db created"));
-        }).then((context) {
-          print("db opened");
-          return context;
+      // When creating the db, create the table
+      await db
+          .execute("CREATE TABLE $tableName ("
+              "${Term.db_id} STRING PRIMARY KEY,"
+              "${Term.db_name} TEXT,"
+              "${Term.db_definition} TEXT,"
+              "${Term.db_maker} TEXT,"
+              "${Term.db_year} INTEGER,"
+              "${Term.db_tags} BLOB,"
+              "${Term.db_related} BLOB,"
+              "${Term.db_abbreviation} TEXT"
+              ")")
+          .then((context) => print("db created"));
+    }).then((context) {
+      print("db opened");
+      return context;
     });
 
-    final versionPath = await getApplicationDocumentsDirectory().then((dir) {
-      return dir.path;
+    await addTermsFromFile().then((termList) {
+      termList.forEach((t) => updateTerm(t));
     });
-    final versionFile = File('$versionPath/version.txt');
 
-    int serverVersion = await getServerVersion();
-    int localVersion = await getLocalVersion(versionFile);
-    print("Server version $serverVersion; Local version $localVersion");
-
-    if (serverVersion == -1) print("Error: Could not contact server");
-    else if (serverVersion != localVersion) {
-      await addTermsFromServer().then((termList) {
-        termList.forEach((t) => updateTerm(t));
-      });
-      versionFile.writeAsString("$serverVersion");
-    }
+//    final versionPath = await getApplicationDocumentsDirectory().then((dir) {
+//      return dir.path;
+//    });
+//    final versionFile = File('$versionPath/version.txt');
+//
+//    int serverVersion = await getServerVersion();
+//    int localVersion = await getLocalVersion(versionFile);
+//    print("Server version $serverVersion; Local version $localVersion");
+//
+//    if (serverVersion == -1)
+//      print("Error: Could not contact server");
+//    else if (serverVersion != localVersion) {
+//      await addTermsFromServer().then((termList) {
+//        termList.forEach((t) => updateTerm(t));
+//      });
+//      versionFile.writeAsString("$serverVersion");
+//    }
 
     didInit = true;
   }
@@ -89,24 +96,24 @@ class TermDatabase {
     } catch (FileSystemException) {
       return 0;
     }
-
   }
 
-
   /// Get a book by its id, if there is not entry for that ID, returns null.
-  Future<Term> getTerm(String id) async{
+  Future<Term> getTerm(String id) async {
     var db = await _getDb();
-    var result = await db.rawQuery('SELECT * FROM $tableName WHERE ${Term.db_id} = "$id"');
-    if(result.length == 0)return null;
+    var result = await db
+        .rawQuery('SELECT * FROM $tableName WHERE ${Term.db_id} = "$id"');
+    if (result.length == 0) return null;
     return new Term.fromMap(result[0]);
   }
 
   /// Get all terms from local database, return a list with all the terms
-  Future<List<Term>> getAllTerms() async{
+  Future<List<Term>> getAllTerms() async {
     var db = await _getDb();
     var result = await db.rawQuery('SELECT * FROM $tableName');
     List<Term> dbTerms = [];
-    for(Map<String, dynamic> item in result) {
+    print(result[0]);
+    for (Map<String, dynamic> item in result) {
       dbTerms.add(new Term.fromMap(item));
     }
     return dbTerms;
@@ -118,7 +125,7 @@ class TermDatabase {
 
     var terms = await http.get(url).then((response) {
       print("received terms response");
-      List<Term> termList =[];
+      List<Term> termList = [];
       json.decode(response.body).forEach((termJson) {
         termList.add(Term.fromJson(termJson));
       });
@@ -129,18 +136,31 @@ class TermDatabase {
 
   /// Get most recent terms from file and return them in a list
   Future<List<Term>> addTermsFromFile() async {
-    Term term1 = new Term(name: "C#",
-        definition: "High level programming language within the .NET framework.",
-        id: "1", maker: "Microsoft", year: 2000);
-    Term term2 = new Term(name: "Ruby on Rails",
+    Term term1 = new Term(
+        name: "C#",
+        definition:
+            "High level programming language within the .NET framework.",
+        id: "1",
+        maker: "Microsoft",
+        year: 2000,
+        tags: ["Programming Languages"]);
+    Term term2 = new Term(
+        name: "Ruby on Rails",
         definition: "Server-side web application framework written in Ruby.",
-        id: "2", maker: "David Heinemmeier Hansson", year: 2005);
-    Term term3 = new Term(name: "SQL",
-        definition: "see Structured Query Language",
-        id: "3");
-    Term term4 = new Term(name: "Git",
-        definition: "Version control system for tracking changes in files. Primarily used for source code management.",
-        id: "4", maker: "Linus Torvalds", year: 2005);
+        id: "2",
+        maker: "David Heinemmeier Hansson",
+        year: 2005,
+        tags: ["Application Frameworks"],
+        related: ["C#"]);
+    Term term3 = new Term(
+        name: "SQL", definition: "see Structured Query Language", id: "3");
+    Term term4 = new Term(
+        name: "Git",
+        definition:
+            "Version control system for tracking changes in files. Primarily used for source code management.",
+        id: "4",
+        maker: "Linus Torvalds",
+        year: 2005);
 
     return [term1, term2, term3, term4];
   }
@@ -150,15 +170,22 @@ class TermDatabase {
   Future updateTerm(Term term) async {
     await db.rawInsert(
         'INSERT OR REPLACE INTO '
-            '$tableName(${Term.db_id}, ${Term.db_name}, ${Term.db_definition}, ${Term.db_maker}, ${Term.db_year})'
-            ' VALUES(?, ?, ?, ?, ?)',
-        [term.id, term.name, term.definition, term.maker, term.year]);
-
+        '$tableName(${Term.db_id}, ${Term.db_name}, ${Term.db_definition}, ${Term.db_maker}, ${Term.db_year}, ${Term.db_tags}, ${Term.db_related}, ${Term.db_abbreviation})'
+        ' VALUES(?, ?, ?, ?, ?, ?, ?, ?)',
+        [
+          term.id,
+          term.name,
+          term.definition,
+          term.maker,
+          term.year,
+          term.tags,
+          term.related,
+          term.abbreviation
+        ]);
   }
 
   Future close() async {
     var db = await _getDb();
     return db.close();
   }
-
 }

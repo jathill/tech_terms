@@ -28,13 +28,13 @@ class Term {
   static final db_id = "id";
   static final db_maker = "Creator";
   static final db_year = "Year_Created";
-  //static final db_tags = "Tags";
-  //static final db_related = "Related";
+  static final db_tags = "Tags";
+  static final db_related = "Related";
+  static final db_abbreviation = "Abbreviation";
 
-  String name, id, definition, maker;
+  String name, id, definition, maker, abbreviation;
   int year;
-  //List<Tag> tags;
-  //List<Term> related;
+  List<String> tags, related;
 
   Term({
     @required this.name,
@@ -42,8 +42,9 @@ class Term {
     @required this.id,
     this.maker,
     this.year,
-    //this.tags,
-    //this.related,
+    this.tags,
+    this.related,
+    this.abbreviation
   });
 
   factory Term.fromJson(Map<String, dynamic> json) {
@@ -51,6 +52,9 @@ class Term {
         name: json['name'], definition: json['definition'], id: json['id']);
     if (json.containsKey("maker")) term.maker = json['maker'];
     if (json.containsKey("year")) term.year = json['year'];
+    if (json.containsKey("tags")) term.tags = json['tags'];
+    if (json.containsKey("related")) term.related = json['related'];
+    if (json.containsKey("abbreviation")) term.abbreviation = json['abbr'];
     return term;
   }
 
@@ -64,4 +68,5 @@ class Term {
           //tags: map[db_tags],
           //related: map[db_related],
         );
+
 }
