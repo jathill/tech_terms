@@ -10,7 +10,9 @@ import 'package:tech_terms/Term.dart';
 class TermDatabase {
   static final TermDatabase _termDatabase = new TermDatabase._internal();
 
-  final String tableName = "Terms";
+  final String tableName0 = "Terms";
+  final String tableName1 = "Tags";
+  final String tableName2 = "Related";
 
   Database db;
 
@@ -40,20 +42,32 @@ class TermDatabase {
         onCreate: (Database db, int version) async {
       // When creating the db, create the table
       await db
-          .execute("CREATE TABLE $tableName ("
+          .execute("CREATE TABLE $tableName0 ("
               "${Term.db_id} STRING PRIMARY KEY,"
               "${Term.db_name} TEXT,"
               "${Term.db_definition} TEXT,"
               "${Term.db_maker} TEXT,"
               "${Term.db_year} INTEGER,"
-              "${Term.db_tags} BLOB,"
-              "${Term.db_related} BLOB,"
               "${Term.db_abbreviation} TEXT"
               ")")
-          .then((context) => print("db created"));
-    }).then((context) {
+          .then((context) => print("Term db created"));
+      await db
+          .execute("CREATE TABLE $tableName1 ("
+              "${Tag.db_id} STRING PRIMARY KEY,"
+              "${Tag.db_name} TEXT,"
+              "FOREIGN KEY (${Tag.db_term_id}) REFERENCES ${tableName0} (id) ON DELETE NO ACTION ON UPDATE NO ACTION"
+              ")")
+          .then((context) => print("Tag db created"));
+      await db
+          .execute("CREATE TABLE $tableName2 ("
+          "${Relation.db_id} STRING PRIMARY KEY,"
+          "${Relation.db_to_term} TEXT,"
+          "FOREIGN KEY (${Relation.db_from_term}) REFERENCES ${tableName0} (id) ON DELETE NO ACTION ON UPDATE NO ACTION"
+          ")")
+          .then((context) => print("Tag db created"));
+    }).then((createdDB) {
       print("db opened");
-      return context;
+      return createdDB;
     });
 
     await addTermsFromFile().then((termList) {
@@ -102,7 +116,7 @@ class TermDatabase {
   Future<Term> getTerm(String id) async {
     var db = await _getDb();
     var result = await db
-        .rawQuery('SELECT * FROM $tableName WHERE ${Term.db_id} = "$id"');
+        .rawQuery('SELECT * FROM $tableName0 WHERE ${Term.db_id} = "$id"');
     if (result.length == 0) return null;
     return new Term.fromMap(result[0]);
   }
@@ -110,7 +124,7 @@ class TermDatabase {
   /// Get all terms from local database, return a list with all the terms
   Future<List<Term>> getAllTerms() async {
     var db = await _getDb();
-    var result = await db.rawQuery('SELECT * FROM $tableName');
+    var result = await db.rawQuery('SELECT * FROM $tableName0');
     List<Term> dbTerms = [];
     print(result[0]);
     for (Map<String, dynamic> item in result) {
@@ -170,7 +184,7 @@ class TermDatabase {
   Future updateTerm(Term term) async {
     await db.rawInsert(
         'INSERT OR REPLACE INTO '
-        '$tableName(${Term.db_id}, ${Term.db_name}, ${Term.db_definition}, ${Term.db_maker}, ${Term.db_year}, ${Term.db_tags}, ${Term.db_related}, ${Term.db_abbreviation})'
+        '$tableName0(${Term.db_id}, ${Term.db_name}, ${Term.db_definition}, ${Term.db_maker}, ${Term.db_year}, ${Term.db_tags}, ${Term.db_related}, ${Term.db_abbreviation})'
         ' VALUES(?, ?, ?, ?, ?, ?, ?, ?)',
         [
           term.id,
