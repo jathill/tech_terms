@@ -8,7 +8,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return new MaterialApp(
-      title: 'Startup Name Generator',
+      title: 'TechTerms',
       theme: new ThemeData(
         primaryColor: Colors.amber,
       ),
@@ -22,20 +22,25 @@ class TermDictionary extends StatefulWidget {
   createState() => new TermDictionaryState();
 }
 
-class TermDictionaryState extends State<TermDictionary> {
+class TermDictionaryState extends State<TermDictionary>
+    with SingleTickerProviderStateMixin {
+  TabController tabController;
   List<Term> terms = new List();
+  List<String> tagNames = new List();
   final _biggerFont = const TextStyle(fontSize: 18.0);
 
   @override
   void initState() {
     super.initState();
+    tabController = new TabController(length: 2, vsync: this);
     var db = TermDatabase.get();
     db.init().then((context) {
       db.getAllTerms().then((dbTerms) {
         if (dbTerms == null) return;
-        setState(() {
-          terms = dbTerms;
-        });
+        setState(() => terms = dbTerms);
+      });
+      db.getTagNames().then((names) {
+        setState(() => tagNames = names);
       });
     });
   }
@@ -46,11 +51,20 @@ class TermDictionaryState extends State<TermDictionary> {
       appBar: new AppBar(
         title: new Text('TechTerms'),
       ),
-      body: _buildSuggestions(),
+      body: new TabBarView(
+        children: <Widget>[_buildTermList(), _buildTagList()],
+        controller: tabController,
+      ),
+      bottomNavigationBar: new Material(
+          color: Colors.amber,
+          child: new TabBar(controller: tabController, tabs: <Widget>[
+            new Tab(child: new Icon(Icons.view_list)),
+            new Tab(child: new Icon(Icons.menu))
+          ])),
     );
   }
 
-  Widget _buildSuggestions() {
+  Widget _buildTermList() {
     return new ListView.builder(
         padding: const EdgeInsets.all(16.0),
         itemCount: terms.length * 2,
@@ -58,11 +72,11 @@ class TermDictionaryState extends State<TermDictionary> {
           // Add a one-pixel-high divider widget before each row in theListView.
           if (i.isOdd) return new Divider();
           final index = i ~/ 2;
-          return _buildRow(terms[index]);
+          return _buildTermRow(terms[index]);
         });
   }
 
-  Widget _buildRow(Term t) {
+  Widget _buildTermRow(Term t) {
     return new ListTile(
       title: new Text(
         t.name,
@@ -72,6 +86,22 @@ class TermDictionaryState extends State<TermDictionary> {
         _tappedTerm(t);
       },
     );
+  }
+
+  Widget _buildTagList() {
+    return new ListView.builder(
+        padding: const EdgeInsets.all(16.0),
+        itemCount: tagNames.length * 2,
+        itemBuilder: (context, i) {
+          // Add a one-pixel-high divider widget before each row in theListView.
+          if (i.isOdd) return new Divider();
+          final index = i ~/ 2;
+          return _buildTagRow(tagNames[index]);
+        });
+  }
+
+  Widget _buildTagRow(String t) {
+    return new ListTile(title: new Text(t, style: _biggerFont));
   }
 
   void _tappedTerm(Term t) {
