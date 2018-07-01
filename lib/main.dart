@@ -187,6 +187,28 @@ class TermDictionaryState extends State<TermDictionary>
               )));
         }
 
+        if (t.tags != null) {
+          mainColumn.children.add(new Padding(
+              padding: new EdgeInsets.only(bottom: 32.0),
+              child: new Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  new Container(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: new Text(
+                      Term.db_tags,
+                      style: new TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  new Row(
+                    children: buildTagButtons(t)
+                  )
+                ],
+              )));
+        }
+
         var termInfo = new Container(
             padding: const EdgeInsets.all(32.0), child: mainColumn);
 
@@ -199,4 +221,19 @@ class TermDictionaryState extends State<TermDictionary>
       }),
     );
   }
+
+  List<Widget> buildTagButtons(Term t) {
+    List<Widget> buttons = [];
+    t.tags.forEach((String name) {
+      final button = new OutlineButton(
+          onPressed: () => print("yo"),
+          borderSide: new BorderSide(color: Colors.lightBlue),
+          textColor: Colors.blueGrey,
+          child: new Text(name),
+      );
+      buttons.add(button);
+    });
+    return buttons;
+  }
+
 }

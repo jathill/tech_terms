@@ -15,6 +15,7 @@ class TermDatabase {
   final String tableName2 = "Related";
 
   Database db;
+  List<Term> _cachedTerms;
 
   bool didInit = false;
 
@@ -50,7 +51,7 @@ class TermDatabase {
               "${Term.db_year} INTEGER,"
               "${Term.db_abbreviation} TEXT"
               ")")
-          .then((context) => print("Term db created"));
+          .then((context) => print("Term table created"));
       await db
           .execute("CREATE TABLE $tableName1 ("
               "${Tag.db_id} STRING PRIMARY KEY,"
@@ -58,7 +59,7 @@ class TermDatabase {
               "${Tag.db_term_id} TEXT NOT NULL,"
               "FOREIGN KEY (${Tag.db_term_id}) REFERENCES ${tableName0} (id) ON DELETE NO ACTION ON UPDATE NO ACTION"
               ")")
-          .then((context) => print("Tag db created"));
+          .then((context) => print("Tag table created"));
       await db
           .execute("CREATE TABLE $tableName2 ("
               "${Relation.db_id} STRING PRIMARY KEY,"
@@ -66,7 +67,7 @@ class TermDatabase {
               "${Relation.db_from_term} TEXT NOT NULL,"
               "FOREIGN KEY (${Relation.db_from_term}) REFERENCES ${tableName0} (id) ON DELETE NO ACTION ON UPDATE NO ACTION"
               ")")
-          .then((context) => print("Relation db created"));
+          .then((context) => print("Relation table created"));
     }).then((createdDB) {
       print("db opened");
       return createdDB;
@@ -95,10 +96,12 @@ class TermDatabase {
         termList.forEach((t) => updateTerm(t));
         tagList.forEach((t) => updateTag(t));
       });
+
       versionFile.writeAsString("$serverVersion");
     }
 
     didInit = true;
+    await setTags(await getAllTerms());
   }
 
   Future<int> getServerVersion() async {
@@ -127,14 +130,38 @@ class TermDatabase {
     return new Term.fromMap(result[0]);
   }
 
+
+  Future<List<Term>> setTags(List<Term> termList) async {
+    List<Term> taggedTermList = [];
+    await Future.forEach(termList, (Term t) async {
+      var db = await _getDb();
+      var result = await db
+          .rawQuery('SELECT ${Tag.db_name} FROM $tableName1 WHERE ${Tag.db_term_id} = "${t.id}"');
+      if (result.length == 0) t.tags = null;
+      else {
+        List<String> tags = [];
+        result.forEach((map) {
+          tags.add(map[Tag.db_name]);
+        });
+        t.tags = tags;
+      }
+      taggedTermList.add(t);
+    });
+
+    return taggedTermList;
+  }
+
   /// Get all terms from local database, return a list with all the terms
   Future<List<Term>> getAllTerms() async {
+    if (_cachedTerms != null) return _cachedTerms;
+
     var db = await _getDb();
     var result = await db.rawQuery('SELECT * FROM $tableName0');
     List<Term> dbTerms = [];
     for (Map<String, dynamic> item in result) {
       dbTerms.add(new Term.fromMap(item));
     }
+    _cachedTerms = dbTerms;
     return dbTerms;
   }
 

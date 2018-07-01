@@ -54,9 +54,9 @@ class Term {
   static final db_id = "id";
   static final db_maker = "Creator";
   static final db_year = "Year_Created";
+  static final db_abbreviation = "Abbreviation";
   static final db_tags = "Tags";
   static final db_related = "Related";
-  static final db_abbreviation = "Abbreviation";
 
   String name, id, definition, maker, abbreviation;
   int year;
