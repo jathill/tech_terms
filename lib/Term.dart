@@ -48,7 +48,7 @@ class Tag {
       : this(name: map[db_name], id: map[db_id], term_id: map[db_term_id]);
 }
 
-class Term {
+class Term extends Comparable{
   static final db_name = "Name";
   static final db_definition = "Definition";
   static final db_id = "id";
@@ -91,4 +91,9 @@ class Term {
           maker: map[db_maker],
           year: map[db_year],
         );
+
+  @override
+  int compareTo(other) {
+    return this.name.compareTo(other.name);
+  }
 }

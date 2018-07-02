@@ -26,7 +26,7 @@ class TermDictionaryState extends State<TermDictionary>
     with SingleTickerProviderStateMixin {
   TabController tabController;
   List<Term> terms = new List();
-  List<String> tagNames = new List();
+  Map<String, List<Term>> tags = new Map();
   final _biggerFont = const TextStyle(fontSize: 18.0);
 
   @override
@@ -39,8 +39,8 @@ class TermDictionaryState extends State<TermDictionary>
         if (dbTerms == null) return;
         setState(() => terms = dbTerms);
       });
-      db.getTagNames().then((names) {
-        setState(() => tagNames = names);
+      db.getTags().then((tagMap) {
+        setState(() => tags = tagMap);
       });
     });
   }
@@ -52,7 +52,7 @@ class TermDictionaryState extends State<TermDictionary>
         title: new Text('TechTerms'),
       ),
       body: new TabBarView(
-        children: <Widget>[_buildTermList(), _buildTagList()],
+        children: <Widget>[_buildFullTermList(), _buildTagList()],
         controller: tabController,
       ),
       bottomNavigationBar: new Material(
@@ -64,15 +64,19 @@ class TermDictionaryState extends State<TermDictionary>
     );
   }
 
-  Widget _buildTermList() {
+  Widget _buildFullTermList() {
+    return _buildTermList(terms);
+  }
+
+  Widget _buildTermList(termList) {
     return new ListView.builder(
         padding: const EdgeInsets.all(16.0),
-        itemCount: terms.length * 2,
+        itemCount: termList.length * 2,
         itemBuilder: (context, i) {
           // Add a one-pixel-high divider widget before each row in theListView.
           if (i.isOdd) return new Divider();
           final index = i ~/ 2;
-          return _buildTermRow(terms[index]);
+          return _buildTermRow(termList[index]);
         });
   }
 
@@ -82,13 +86,12 @@ class TermDictionaryState extends State<TermDictionary>
         t.name,
         style: _biggerFont,
       ),
-      onTap: () {
-        _tappedTerm(t);
-      },
+      onTap: () => _tappedTerm(t),
     );
   }
 
   Widget _buildTagList() {
+    List<String> tagNames = List<String>.from(tags.keys);
     return new ListView.builder(
         padding: const EdgeInsets.all(16.0),
         itemCount: tagNames.length * 2,
@@ -101,7 +104,10 @@ class TermDictionaryState extends State<TermDictionary>
   }
 
   Widget _buildTagRow(String t) {
-    return new ListTile(title: new Text(t, style: _biggerFont));
+    return new ListTile(
+      title: new Text(t, style: _biggerFont),
+      onTap: () => _tappedTag(t),
+    );
   }
 
   void _tappedTerm(Term t) {
@@ -202,21 +208,32 @@ class TermDictionaryState extends State<TermDictionary>
                       ),
                     ),
                   ),
-                  new Row(
-                    children: buildTagButtons(t)
-                  )
+                  new Row(children: buildTagButtons(t))
                 ],
               )));
         }
 
-        var termInfo = new Container(
+        var body = new Container(
             padding: const EdgeInsets.all(32.0), child: mainColumn);
 
         return new Scaffold(
           appBar: new AppBar(
             title: new Text(t.name),
           ),
-          body: termInfo,
+          body: body,
+        );
+      }),
+    );
+  }
+
+  void _tappedTag(String tagName) {
+    Navigator.of(context).push(
+      new MaterialPageRoute(builder: (context) {
+        return new Scaffold(
+          appBar: new AppBar(
+            title: new Text(tagName),
+          ),
+          body: _buildTermList(tags[tagName]),
         );
       }),
     );
@@ -226,14 +243,13 @@ class TermDictionaryState extends State<TermDictionary>
     List<Widget> buttons = [];
     t.tags.forEach((String name) {
       final button = new OutlineButton(
-          onPressed: () => print("yo"),
-          borderSide: new BorderSide(color: Colors.lightBlue),
-          textColor: Colors.blueGrey,
-          child: new Text(name),
+        onPressed: () => print("yo"),
+        borderSide: new BorderSide(color: Colors.lightBlue),
+        textColor: Colors.blueGrey,
+        child: new Text(name),
       );
       buttons.add(button);
     });
     return buttons;
   }
-
 }

@@ -130,14 +130,14 @@ class TermDatabase {
     return new Term.fromMap(result[0]);
   }
 
-
   Future<List<Term>> setTags(List<Term> termList) async {
     List<Term> taggedTermList = [];
     await Future.forEach(termList, (Term t) async {
       var db = await _getDb();
-      var result = await db
-          .rawQuery('SELECT ${Tag.db_name} FROM $tableName1 WHERE ${Tag.db_term_id} = "${t.id}"');
-      if (result.length == 0) t.tags = null;
+      var result = await db.rawQuery(
+          'SELECT ${Tag.db_name} FROM $tableName1 WHERE ${Tag.db_term_id} = "${t.id}"');
+      if (result.length == 0)
+        t.tags = null;
       else {
         List<String> tags = [];
         result.forEach((map) {
@@ -166,13 +166,37 @@ class TermDatabase {
   }
 
   /// Get all terms from local database, return a list with all the terms
-  Future<List<String>> getTagNames() async {
+  Future<Map<String, List<Term>>> getTags() async {
     final url = 'https://tech-terms.herokuapp.com/get_tag_names';
-    return await http.get(url).then((response) {
+    return await http.get(url).then((response) async {
       //if (response.statusCode != 200) getFromDB();
-      List decoded = json.decode(response.body);
-      return List<String>.from(decoded);
+      List<String> tagNames = List<String>.from(json.decode(response.body));
+
+      Map<String, List<Term>> tagMap = {};
+      await Future.forEach(tagNames, (String name) async {
+        tagMap[name] = await getTermsForTag(name);
+      });
+
+      return tagMap;
     });
+  }
+
+  Future<List<Term>> getTermsForTag(String tagName) async {
+    var db = await _getDb();
+    var result = await db.rawQuery(
+        'SELECT ${Tag.db_term_id} FROM $tableName1 WHERE ${Tag.db_name} = "$tagName"');
+    List<String> termIDs = [];
+    result.forEach((item) {
+      termIDs.add(item[Tag.db_term_id]);
+    });
+    List<Term> termList = [];
+    await Future.forEach(termIDs, (id) async {
+      termList.add(await getTerm(id));
+    });
+
+    termList.sort();
+    List<Term> terms = await setTags(termList);
+    return terms;
   }
 
   /// Get most recent terms from server and return them in a list
@@ -255,13 +279,9 @@ class TermDatabase {
   Future updateTag(Tag tag) async {
     await db.rawInsert(
         'INSERT OR REPLACE INTO '
-            '$tableName1(${Tag.db_id}, ${Tag.db_name}, ${Tag.db_term_id})'
-            ' VALUES(?, ?, ?)',
-        [
-          tag.id,
-          tag.name,
-          tag.term_id
-        ]);
+        '$tableName1(${Tag.db_id}, ${Tag.db_name}, ${Tag.db_term_id})'
+        ' VALUES(?, ?, ?)',
+        [tag.id, tag.name, tag.term_id]);
   }
 
   Future close() async {
