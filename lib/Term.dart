@@ -60,7 +60,8 @@ class Term extends Comparable{
 
   String name, id, definition, maker, abbreviation;
   int year;
-  List<String> tags, related;
+  List<String> tags;
+  List<Term> related;
 
   Term(
       {@required this.name,

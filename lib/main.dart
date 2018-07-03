@@ -213,6 +213,26 @@ class TermDictionaryState extends State<TermDictionary>
               )));
         }
 
+        if (t.related != null) {
+          mainColumn.children.add(new Padding(
+              padding: new EdgeInsets.only(bottom: 32.0),
+              child: new Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  new Container(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: new Text(
+                      Term.db_related,
+                      style: new TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  new Row(children: buildRelatedButtons(t))
+                ],
+              )));
+        }
+
         var body = new Container(
             padding: const EdgeInsets.all(32.0), child: mainColumn);
 
@@ -242,11 +262,30 @@ class TermDictionaryState extends State<TermDictionary>
   List<Widget> buildTagButtons(Term t) {
     List<Widget> buttons = [];
     t.tags.forEach((String name) {
-      final button = new OutlineButton(
-        onPressed: () => print("yo"),
-        borderSide: new BorderSide(color: Colors.lightBlue),
-        textColor: Colors.blueGrey,
-        child: new Text(name),
+      final button = new Padding(
+          padding: new EdgeInsets.only(right: 8.0),
+          child: new OutlineButton(
+            onPressed: () => _tappedTag(name),
+            borderSide: new BorderSide(color: Colors.lightBlue),
+            textColor: Colors.blueGrey,
+            child: new Text(name),
+          ));
+      buttons.add(button);
+    });
+    return buttons;
+  }
+
+  List<Widget> buildRelatedButtons(Term t) {
+    List<Widget> buttons = [];
+    t.related.forEach((Term relatedTerm) {
+      final button = new Padding(
+        padding: new EdgeInsets.only(right: 8.0),
+        child: new OutlineButton(
+          onPressed: () => _tappedTerm(relatedTerm),
+          borderSide: new BorderSide(color: Colors.lightBlue),
+          textColor: Colors.blueGrey,
+          child: new Text(relatedTerm.name),
+        ),
       );
       buttons.add(button);
     });

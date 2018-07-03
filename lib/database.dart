@@ -92,16 +92,18 @@ class TermDatabase {
       await addTermsFromServer().then((serverDict) {
         final termList = serverDict['terms'];
         final tagList = serverDict['tags'];
+        final relationList = serverDict['related'];
 
         termList.forEach((t) => updateTerm(t));
         tagList.forEach((t) => updateTag(t));
+        relationList.forEach((r) => updateRelation(r));
       });
 
       versionFile.writeAsString("$serverVersion");
     }
 
     didInit = true;
-    await setTags(await getAllTerms());
+    setTags(await getAllTerms()).then((context) => setRelated(_cachedTerms));
   }
 
   Future<int> getServerVersion() async {
@@ -130,8 +132,7 @@ class TermDatabase {
     return new Term.fromMap(result[0]);
   }
 
-  Future<List<Term>> setTags(List<Term> termList) async {
-    List<Term> taggedTermList = [];
+  Future setTags(List<Term> termList) async {
     await Future.forEach(termList, (Term t) async {
       var db = await _getDb();
       var result = await db.rawQuery(
@@ -145,10 +146,25 @@ class TermDatabase {
         });
         t.tags = tags;
       }
-      taggedTermList.add(t);
     });
+  }
 
-    return taggedTermList;
+  void setRelated(List<Term> termList) async {
+    await Future.forEach(termList, (Term t) async {
+      var db = await _getDb();
+      var result = await db.rawQuery(
+          'SELECT ${Relation.db_to_term} FROM $tableName2 WHERE ${Relation.db_from_term} = "${t.id}"');
+      if (result.length == 0)
+        t.related = null;
+      else {
+        List<Term> related = [];
+        result.forEach((map) {
+          String termName = map[Relation.db_to_term];
+          related.add(_cachedTerms.firstWhere((t) => t.name == termName));
+        });
+        t.related = related;
+      }
+    });
   }
 
   /// Get all terms from local database, return a list with all the terms
@@ -190,19 +206,21 @@ class TermDatabase {
       termIDs.add(item[Tag.db_term_id]);
     });
     List<Term> termList = [];
-    await Future.forEach(termIDs, (id) async {
-      termList.add(await getTerm(id));
+
+    termIDs.forEach((id) {
+      termList.add(_cachedTerms.firstWhere((t) => t.id == id));
     });
 
     termList.sort();
-    List<Term> terms = await setTags(termList);
-    return terms;
+    return termList;
+
   }
 
   /// Get most recent terms from server and return them in a list
   Future<Map<String, dynamic>> addTermsFromServer() async {
     final termURL = 'https://tech-terms.herokuapp.com/get_terms';
     final tagsURL = 'https://tech-terms.herokuapp.com/get_tags';
+    final relatedURL = 'https://tech-terms.herokuapp.com/get_related';
 
     var terms = await http.get(termURL).then((response) {
       print("received terms response");
@@ -222,7 +240,16 @@ class TermDatabase {
       return tagList;
     });
 
-    return {"terms": terms, "tags": tags};
+    var related = await http.get(relatedURL).then((response) {
+      print("received related response");
+      List<Relation> relationList = [];
+      json.decode(response.body).forEach((relationJson) {
+        relationList.add(Relation.fromJson(relationJson));
+      });
+      return relationList;
+    });
+
+    return {"terms": terms, "tags": tags, "related": related};
   }
 
   /// Get most recent terms from file and return them in a list
@@ -241,8 +268,7 @@ class TermDatabase {
         id: "2",
         maker: "David Heinemmeier Hansson",
         year: 2005,
-        tags: ["Application Frameworks"],
-        related: ["C#"]);
+        tags: ["Application Frameworks"]);
     Term term3 = new Term(
         name: "SQL",
         definition: "see Structured Query Language",
@@ -282,6 +308,14 @@ class TermDatabase {
         '$tableName1(${Tag.db_id}, ${Tag.db_name}, ${Tag.db_term_id})'
         ' VALUES(?, ?, ?)',
         [tag.id, tag.name, tag.term_id]);
+  }
+
+  Future updateRelation(Relation relation) async {
+    await db.rawInsert(
+        'INSERT OR REPLACE INTO '
+        '$tableName2(${Relation.db_id}, ${Relation.db_from_term}, ${Relation.db_to_term})'
+        ' VALUES(?, ?, ?)',
+        [relation.id, relation.from_term, relation.to_term]);
   }
 
   Future close() async {
