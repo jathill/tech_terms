@@ -256,6 +256,22 @@ class TermDictionaryState extends State<TermDictionary>
             title: new Text(t.name),
           ),
           body: body,
+          bottomNavigationBar: new Material(
+              color: Colors.amber,
+              child: new BottomNavigationBar(
+                  items: [
+                    new BottomNavigationBarItem(
+                        icon: new Icon(Icons.view_list),
+                        title: new Text("Terms")),
+                    new BottomNavigationBarItem(
+                        icon: new Icon(Icons.menu), title: new Text("Tags"))
+                  ],
+                  onTap: (i) {
+                    while (Navigator.of(context).canPop()) {
+                      Navigator.of(context).pop();
+                    }
+                    tabController.animateTo(i);
+                  })),
         );
       }),
     );
@@ -269,6 +285,22 @@ class TermDictionaryState extends State<TermDictionary>
             title: new Text(tagName),
           ),
           body: _buildTermList(tags[tagName]),
+          bottomNavigationBar: new Material(
+              color: Colors.amber,
+              child: new BottomNavigationBar(
+                  items: [
+                    new BottomNavigationBarItem(
+                        icon: new Icon(Icons.view_list),
+                        title: new Text("Terms")),
+                    new BottomNavigationBarItem(
+                        icon: new Icon(Icons.menu), title: new Text("Tags"))
+                  ],
+                  onTap: (i) {
+                    while (Navigator.of(context).canPop()) {
+                      Navigator.of(context).pop();
+                    }
+                    tabController.animateTo(i);
+                  })),
         );
       }),
     );
