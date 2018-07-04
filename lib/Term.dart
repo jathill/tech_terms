@@ -80,7 +80,7 @@ class Term extends Comparable{
     if (json.containsKey("year")) term.year = json['year'];
     if (json.containsKey("tags")) term.tags = json['tags'];
     if (json.containsKey("related")) term.related = json['related'];
-    if (json.containsKey("abbreviation")) term.abbreviation = json['abbr'];
+    if (json.containsKey("abbr")) term.abbreviation = json['abbr'];
     return term;
   }
 
@@ -91,6 +91,7 @@ class Term extends Comparable{
           id: map[db_id].toString(),
           maker: map[db_maker],
           year: map[db_year],
+          abbreviation: map[db_abbreviation],
         );
 
   @override

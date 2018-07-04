@@ -177,6 +177,7 @@ class TermDatabase {
     for (Map<String, dynamic> item in result) {
       dbTerms.add(new Term.fromMap(item));
     }
+
     _cachedTerms = dbTerms;
     return dbTerms;
   }
@@ -213,7 +214,6 @@ class TermDatabase {
 
     termList.sort();
     return termList;
-
   }
 
   /// Get most recent terms from server and return them in a list

@@ -113,6 +113,25 @@ class TermDictionaryState extends State<TermDictionary>
   void _tappedTerm(Term t) {
     Navigator.of(context).push(
       new MaterialPageRoute(builder: (context) {
+        var defContent;
+
+        if (t.abbreviation != null) {
+          Term linkedAbbr =
+              terms.firstWhere((Term term) => term.name == t.abbreviation);
+          Text defText = new Text(t.definition);
+          defContent = new FlatButton(
+              textColor: Colors.lightBlue,
+              onPressed: () => _tappedTerm(linkedAbbr),
+              child: defText);
+        } else {
+          defContent = new Text(
+            t.definition,
+            style: new TextStyle(
+              color: Colors.grey[500],
+            ),
+          );
+        }
+
         var definitionWidget = new Padding(
             padding: new EdgeInsets.only(bottom: 32.0),
             child: new Column(
@@ -120,19 +139,12 @@ class TermDictionaryState extends State<TermDictionary>
               children: [
                 new Container(
                   padding: const EdgeInsets.only(bottom: 8.0),
-                  child: new Text(
-                    Term.db_definition,
-                    style: new TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  child: new Text(Term.db_definition,
+                      style: new TextStyle(
+                        fontWeight: FontWeight.bold,
+                      )),
                 ),
-                new Text(
-                  t.definition,
-                  style: new TextStyle(
-                    color: Colors.grey[500],
-                  ),
-                ),
+                defContent
               ],
             ));
 
@@ -208,7 +220,7 @@ class TermDictionaryState extends State<TermDictionary>
                       ),
                     ),
                   ),
-                  new Row(children: buildTagButtons(t))
+                  new Wrap(spacing: 8.0, children: buildTagButtons(t))
                 ],
               )));
         }
@@ -228,7 +240,10 @@ class TermDictionaryState extends State<TermDictionary>
                       ),
                     ),
                   ),
-                  new Row(children: buildRelatedButtons(t))
+                  new Wrap(
+                      spacing: 8.0,
+                      runSpacing: 4.0,
+                      children: buildRelatedButtons(t))
                 ],
               )));
         }
@@ -262,14 +277,12 @@ class TermDictionaryState extends State<TermDictionary>
   List<Widget> buildTagButtons(Term t) {
     List<Widget> buttons = [];
     t.tags.forEach((String name) {
-      final button = new Padding(
-          padding: new EdgeInsets.only(right: 8.0),
-          child: new OutlineButton(
-            onPressed: () => _tappedTag(name),
-            borderSide: new BorderSide(color: Colors.lightBlue),
-            textColor: Colors.blueGrey,
-            child: new Text(name),
-          ));
+      final button = new OutlineButton(
+        onPressed: () => _tappedTag(name),
+        borderSide: new BorderSide(color: Colors.lightBlue),
+        textColor: Colors.blueGrey,
+        child: new Text(name),
+      );
       buttons.add(button);
     });
     return buttons;
@@ -278,14 +291,11 @@ class TermDictionaryState extends State<TermDictionary>
   List<Widget> buildRelatedButtons(Term t) {
     List<Widget> buttons = [];
     t.related.forEach((Term relatedTerm) {
-      final button = new Padding(
-        padding: new EdgeInsets.only(right: 8.0),
-        child: new OutlineButton(
-          onPressed: () => _tappedTerm(relatedTerm),
-          borderSide: new BorderSide(color: Colors.lightBlue),
-          textColor: Colors.blueGrey,
-          child: new Text(relatedTerm.name),
-        ),
+      final button = new OutlineButton(
+        onPressed: () => _tappedTerm(relatedTerm),
+        borderSide: new BorderSide(color: Colors.lightBlue),
+        textColor: Colors.blueGrey,
+        child: new Text(relatedTerm.name),
       );
       buttons.add(button);
     });
