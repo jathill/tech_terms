@@ -58,7 +58,7 @@ class TermDictionaryState extends State<TermDictionary>
       bottomNavigationBar: new Material(
           color: Colors.amber,
           child: new TabBar(controller: tabController, tabs: <Widget>[
-            new Tab(child: new Icon(Icons.view_list)),
+            new Tab(child: new Icon(Icons.home)),
             new Tab(child: new Icon(Icons.menu))
           ])),
     );
@@ -256,25 +256,48 @@ class TermDictionaryState extends State<TermDictionary>
             title: new Text(t.name),
           ),
           body: body,
-          bottomNavigationBar: new Material(
-              color: Colors.amber,
-              child: new BottomNavigationBar(
-                  items: [
-                    new BottomNavigationBarItem(
-                        icon: new Icon(Icons.view_list),
-                        title: new Text("Terms")),
-                    new BottomNavigationBarItem(
-                        icon: new Icon(Icons.menu), title: new Text("Tags"))
-                  ],
-                  onTap: (i) {
-                    while (Navigator.of(context).canPop()) {
-                      Navigator.of(context).pop();
-                    }
-                    tabController.animateTo(i);
-                  })),
+          bottomNavigationBar: _getSubviewBottomBar(),
         );
       }),
     );
+  }
+
+  Widget _getSubviewBottomBar() {
+    return new Material(
+        color: Colors.amber,
+        child: new TabBar(controller: tabController, tabs: <Widget>[
+          new GestureDetector(
+              child: new Container(
+                  color: Colors.amber,
+                  width: double.infinity,
+                  child: new Tab(
+                    child: new Icon(Icons.home),
+                  )),
+              onTap: () {
+                while (Navigator.of(context).canPop()) {
+                  Navigator.of(context).pop();
+                }
+                setState(() {
+                  if (tabController.index == 1) tabController.index = 0;
+                });
+
+              }),
+          new GestureDetector(
+              child: new Container(
+                  color: Colors.amber,
+                  width: double.infinity,
+                  child: new Tab(
+                    child: new Icon(Icons.menu),
+                  )),
+              onTap: () {
+                while (Navigator.of(context).canPop()) {
+                  Navigator.of(context).pop();
+                }
+                setState(() {
+                  if (tabController.index == 0) tabController.index = 1;
+                });
+              })
+        ]));
   }
 
   void _tappedTag(String tagName) {
@@ -285,22 +308,7 @@ class TermDictionaryState extends State<TermDictionary>
             title: new Text(tagName),
           ),
           body: _buildTermList(tags[tagName]),
-          bottomNavigationBar: new Material(
-              color: Colors.amber,
-              child: new BottomNavigationBar(
-                  items: [
-                    new BottomNavigationBarItem(
-                        icon: new Icon(Icons.view_list),
-                        title: new Text("Terms")),
-                    new BottomNavigationBarItem(
-                        icon: new Icon(Icons.menu), title: new Text("Tags"))
-                  ],
-                  onTap: (i) {
-                    while (Navigator.of(context).canPop()) {
-                      Navigator.of(context).pop();
-                    }
-                    tabController.animateTo(i);
-                  })),
+          bottomNavigationBar: _getSubviewBottomBar(),
         );
       }),
     );
