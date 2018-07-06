@@ -61,12 +61,12 @@ class TermDictionaryState extends State<TermDictionary>
         children: <Widget>[_buildFullTermList(), _buildTagList()],
         controller: tabController,
       ),
-      bottomNavigationBar: new Material(
+      bottomNavigationBar: new Hero(tag: "bottom", child: new Material(
           color: Colors.amber,
           child: new TabBar(controller: tabController, tabs: <Widget>[
             new Tab(child: new Icon(Icons.home)),
             new Tab(child: new Icon(Icons.menu))
-          ])),
+          ]))),
     );
   }
 
@@ -269,7 +269,7 @@ class TermDictionaryState extends State<TermDictionary>
   }
 
   Widget _getSubviewBottomBar() {
-    return new Material(
+    return new Hero(tag: "bottom", child: new Material(
         color: Colors.amber,
         child: new TabBar(controller: tabController, tabs: <Widget>[
           new GestureDetector(
@@ -303,7 +303,7 @@ class TermDictionaryState extends State<TermDictionary>
                   if (tabController.index == 0) tabController.index = 1;
                 });
               })
-        ]));
+        ])));
   }
 
   void _tappedTag(String tagName) {
