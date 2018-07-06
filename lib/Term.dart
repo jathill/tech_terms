@@ -1,62 +1,62 @@
 import 'package:meta/meta.dart';
 
-// REF: https://proandroiddev.com/flutter-bookshelf-app-part-2-personal-notes-and-database-integration-a3b47a84c57
-
 class Relation {
-  static final db_id = "id";
-  static final db_from_term = "From_term";
-  static final db_to_term = "To_term";
+  static const db_id = "id";
+  static const db_from_term = "From_term";
+  static const db_to_term = "To_term";
 
-  String id, from_term, to_term;
+  String id, fromTermID, toTermName;
 
   Relation({
     @required this.id,
-    @required this.from_term,
-    @required this.to_term,
+    @required this.fromTermID,
+    @required this.toTermName,
   });
 
   factory Relation.fromJson(Map<String, dynamic> json) {
     return Relation(
-        id: json['id'], from_term: json['from_term'], to_term: json['to_term']);
+        id: json['id'],
+        fromTermID: json['from_term'],
+        toTermName: json['to_term']);
   }
 
   Relation.fromMap(Map<String, dynamic> map)
       : this(
             id: map[db_id],
-            from_term: map[db_from_term],
-            to_term: map[db_to_term]);
+            fromTermID: map[db_from_term],
+            toTermName: map[db_to_term]);
 }
 
 class Tag {
-  static final db_name = "Name";
-  static final db_id = "id";
-  static final db_term_id = "Term_id";
+  static const db_name = "Name";
+  static const db_id = "id";
+  static const db_term_id = "Term_id";
 
-  String name, id, term_id;
+  String name, id, termID;
 
   Tag({
     @required this.name,
     @required this.id,
-    @required this.term_id,
+    @required this.termID,
   });
 
   factory Tag.fromJson(Map<String, dynamic> json) {
-    return Tag(name: json['name'], id: json['id'], term_id: json['term_id']);
+    return Tag(name: json['name'], id: json['id'], termID: json['term_id']);
   }
 
   Tag.fromMap(Map<String, dynamic> map)
-      : this(name: map[db_name], id: map[db_id], term_id: map[db_term_id]);
+      : this(name: map[db_name], id: map[db_id], termID: map[db_term_id]);
 }
 
-class Term extends Comparable{
-  static final db_name = "Name";
-  static final db_definition = "Definition";
-  static final db_id = "id";
-  static final db_maker = "Creator";
-  static final db_year = "Year_Created";
-  static final db_abbreviation = "Abbreviation";
-  static final db_tags = "Tags";
-  static final db_related = "Related";
+class Term extends Comparable {
+  static const db_name = "Name";
+  static const db_definition = "Definition";
+  static const db_id = "id";
+  static const db_maker = "Creator";
+  static const db_year = "Year_Created";
+  static const db_abbreviation = "Abbreviation";
+  static const db_tags = "Tags";
+  static const db_related = "Related";
 
   String name, id, definition, maker, abbreviation;
   int year;

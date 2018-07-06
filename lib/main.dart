@@ -24,6 +24,8 @@ class TermDictionary extends StatefulWidget {
 
 class TermDictionaryState extends State<TermDictionary>
     with SingleTickerProviderStateMixin {
+
+  bool isLoading = false;
   TabController tabController;
   List<Term> terms = new List();
   Map<String, List<Term>> tags = new Map();
@@ -33,6 +35,7 @@ class TermDictionaryState extends State<TermDictionary>
   void initState() {
     super.initState();
     tabController = new TabController(length: 2, vsync: this);
+    setState(() => isLoading = true);
     var db = TermDatabase.get();
     db.init().then((context) {
       db.getAllTerms().then((dbTerms) {
@@ -40,7 +43,10 @@ class TermDictionaryState extends State<TermDictionary>
         setState(() => terms = dbTerms);
       });
       db.getTags().then((tagMap) {
-        setState(() => tags = tagMap);
+        setState(() {
+          tags = tagMap;
+          isLoading = false;
+        });
       });
     });
   }
@@ -51,7 +57,7 @@ class TermDictionaryState extends State<TermDictionary>
       appBar: new AppBar(
         title: new Text('TechTerms'),
       ),
-      body: new TabBarView(
+      body: isLoading? new Center(child: new CircularProgressIndicator()) : new TabBarView(
         children: <Widget>[_buildFullTermList(), _buildTagList()],
         controller: tabController,
       ),

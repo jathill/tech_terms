@@ -307,7 +307,7 @@ class TermDatabase {
         'INSERT OR REPLACE INTO '
         '$tableName1(${Tag.db_id}, ${Tag.db_name}, ${Tag.db_term_id})'
         ' VALUES(?, ?, ?)',
-        [tag.id, tag.name, tag.term_id]);
+        [tag.id, tag.name, tag.termID]);
   }
 
   Future updateRelation(Relation relation) async {
@@ -315,7 +315,7 @@ class TermDatabase {
         'INSERT OR REPLACE INTO '
         '$tableName2(${Relation.db_id}, ${Relation.db_from_term}, ${Relation.db_to_term})'
         ' VALUES(?, ?, ?)',
-        [relation.id, relation.from_term, relation.to_term]);
+        [relation.id, relation.fromTermID, relation.toTermName]);
   }
 
   Future close() async {
