@@ -4,15 +4,15 @@ import 'dart:io';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:http/http.dart' as http;
 import 'package:tech_terms/Term.dart';
+import 'package:http/http.dart' as http;
 
 class TermDatabase {
   static final TermDatabase _termDatabase = new TermDatabase._internal();
 
-  final String tableName0 = "Terms";
-  final String tableName1 = "Tags";
-  final String tableName2 = "Related";
+  final String termTableName = "Terms";
+  final String tagTableName = "Tags";
+  final String relationTableName = "Related";
 
   Database db;
   List<Term> _cachedTerms;
@@ -25,7 +25,6 @@ class TermDatabase {
 
   TermDatabase._internal();
 
-  /// Use this method to access the database, because initialization of the database (it has to go through the method channel)
   Future<Database> _getDb() async {
     if (!didInit) await _init();
     return db;
@@ -36,69 +35,27 @@ class TermDatabase {
   }
 
   Future _init() async {
-    // Get a location using path_provider
     Directory documentsDirectory = await getApplicationDocumentsDirectory();
     String path = join(documentsDirectory.path, "techTerms.db");
-    db = await openDatabase(path, version: 1,
-        onCreate: (Database db, int version) async {
-      // When creating the db, create the table
-      await db
-          .execute("CREATE TABLE $tableName0 ("
-              "${Term.db_id} STRING PRIMARY KEY,"
-              "${Term.db_name} TEXT NOT NULL,"
-              "${Term.db_definition} TEXT NOT NULL,"
-              "${Term.db_maker} TEXT,"
-              "${Term.db_year} INTEGER,"
-              "${Term.db_abbreviation} TEXT"
-              ")")
-          .then((context) => print("Term table created"));
-      await db
-          .execute("CREATE TABLE $tableName1 ("
-              "${Tag.db_id} STRING PRIMARY KEY,"
-              "${Tag.db_name} TEXT NOT NULL,"
-              "${Tag.db_term_id} TEXT NOT NULL,"
-              "FOREIGN KEY (${Tag.db_term_id}) REFERENCES ${tableName0} (id) ON DELETE NO ACTION ON UPDATE NO ACTION"
-              ")")
-          .then((context) => print("Tag table created"));
-      await db
-          .execute("CREATE TABLE $tableName2 ("
-              "${Relation.db_id} STRING PRIMARY KEY,"
-              "${Relation.db_to_term} TEXT NOT NULL,"
-              "${Relation.db_from_term} TEXT NOT NULL,"
-              "FOREIGN KEY (${Relation.db_from_term}) REFERENCES ${tableName0} (id) ON DELETE NO ACTION ON UPDATE NO ACTION"
-              ")")
-          .then((context) => print("Relation table created"));
-    }).then((createdDB) {
-      print("db opened");
-      return createdDB;
-    });
+
+    db = await openDatabase(path,
+        version: 1, onCreate: (Database db, int version) => createDatabase(db));
 
 //    await addTermsFromFile().then((termList) {
 //      termList.forEach((t) => updateTerm(t));
 //    });
 
-    final versionPath = await getApplicationDocumentsDirectory().then((dir) {
-      return dir.path;
-    });
-    final versionFile = File('$versionPath/version.txt');
-
-    int serverVersion = await getServerVersion();
-    int localVersion = await getLocalVersion(versionFile);
+    final File versionFile = File("${documentsDirectory.path}/version.txt");
+    final int serverVersion = await getServerVersion();
+    final int localVersion = await getLocalVersion(versionFile);
     print("Server version $serverVersion; Local version $localVersion");
 
+    // Checks if local database version is up-to-date, and downloads updated
+    // terms if necessary
     if (serverVersion == -1)
       print("Error: Could not contact server");
     else if (serverVersion != localVersion) {
-      await addTermsFromServer().then((serverDict) {
-        final termList = serverDict['terms'];
-        final tagList = serverDict['tags'];
-        final relationList = serverDict['related'];
-
-        termList.forEach((t) => updateTerm(t));
-        tagList.forEach((t) => updateTag(t));
-        relationList.forEach((r) => updateRelation(r));
-      });
-
+      await updateDatabase();
       versionFile.writeAsString("$serverVersion");
     }
 
@@ -106,6 +63,46 @@ class TermDatabase {
     setTags(await getAllTerms()).then((context) => setRelated(_cachedTerms));
   }
 
+  /// Creates tables for [db] and returns it
+  Future<Database> createDatabase(Database db) async {
+    await db.execute("CREATE TABLE $termTableName ("
+        "${Term.db_id} STRING PRIMARY KEY,"
+        "${Term.db_name} TEXT NOT NULL,"
+        "${Term.db_definition} TEXT NOT NULL,"
+        "${Term.db_maker} TEXT,"
+        "${Term.db_year} INTEGER,"
+        "${Term.db_abbreviation} TEXT"
+        ")");
+    await db.execute("CREATE TABLE $tagTableName ("
+        "${Tag.db_id} STRING PRIMARY KEY,"
+        "${Tag.db_name} TEXT NOT NULL,"
+        "${Tag.db_term_id} TEXT NOT NULL,"
+        "FOREIGN KEY (${Tag.db_term_id}) REFERENCES ${termTableName} (id)"
+        ")");
+    await db.execute("CREATE TABLE $relationTableName ("
+        "${Relation.db_id} STRING PRIMARY KEY,"
+        "${Relation.db_to_term} TEXT NOT NULL,"
+        "${Relation.db_from_term} TEXT NOT NULL,"
+        "FOREIGN KEY (${Relation.db_from_term}) REFERENCES ${termTableName} (id)"
+        ")");
+
+    return db;
+  }
+
+  /// Get updated terms from server and add to local database
+  Future<void> updateDatabase() async {
+    await addTermsFromServer().then((serverDict) {
+      final termList = serverDict['terms'];
+      final tagList = serverDict['tags'];
+      final relationList = serverDict['related'];
+
+      termList.forEach((t) => updateTerm(t));
+      tagList.forEach((t) => updateTag(t));
+      relationList.forEach((r) => updateRelation(r));
+    });
+  }
+
+  /// Returns server database version
   Future<int> getServerVersion() async {
     final url = 'https://tech-terms.herokuapp.com/get_version';
     return await http.get(url).then((response) {
@@ -114,6 +111,7 @@ class TermDatabase {
     });
   }
 
+  /// If [file] not found, returns 0, else returns local DB version from [file]
   Future<int> getLocalVersion(File file) async {
     try {
       String contents = await file.readAsString();
@@ -123,23 +121,14 @@ class TermDatabase {
     }
   }
 
-  /// Get a book by its id, if there is not entry for that ID, returns null.
-  Future<Term> getTerm(String id) async {
-    var db = await _getDb();
-    var result = await db
-        .rawQuery('SELECT * FROM $tableName0 WHERE ${Term.db_id} = "$id"');
-    if (result.length == 0) return null;
-    return new Term.fromMap(result[0]);
-  }
-
-  Future setTags(List<Term> termList) async {
+  /// Gets tags for each term in [termList], sets its tags attribute
+  Future<void> setTags(List<Term> termList) async {
     await Future.forEach(termList, (Term t) async {
       var db = await _getDb();
-      var result = await db.rawQuery(
-          'SELECT ${Tag.db_name} FROM $tableName1 WHERE ${Tag.db_term_id} = "${t.id}"');
-      if (result.length == 0)
-        t.tags = null;
-      else {
+      var result = await db.rawQuery("SELECT ${Tag.db_name} FROM $tagTableName "
+          "WHERE ${Tag.db_term_id} = '${t.id}'");
+
+      if (result.length > 0) {
         List<String> tags = [];
         result.forEach((map) {
           tags.add(map[Tag.db_name]);
@@ -149,11 +138,13 @@ class TermDatabase {
     });
   }
 
+  /// Gets related terms for each term in [termList], sets its related attribute
   void setRelated(List<Term> termList) async {
     await Future.forEach(termList, (Term t) async {
       var db = await _getDb();
-      var result = await db.rawQuery(
-          'SELECT ${Relation.db_to_term} FROM $tableName2 WHERE ${Relation.db_from_term} = "${t.id}"');
+      var result = await db
+          .rawQuery("SELECT ${Relation.db_to_term} FROM $relationTableName "
+              "WHERE ${Relation.db_from_term} = '${t.id}'");
       if (result.length == 0)
         t.related = null;
       else {
@@ -167,12 +158,13 @@ class TermDatabase {
     });
   }
 
-  /// Get all terms from local database, return a list with all the terms
+  /// Returns [_cachedTerms] if not null, otherwise gets all terms from local
+  /// database and returns them as a list
   Future<List<Term>> getAllTerms() async {
     if (_cachedTerms != null) return _cachedTerms;
 
     var db = await _getDb();
-    var result = await db.rawQuery('SELECT * FROM $tableName0');
+    var result = await db.rawQuery("SELECT * FROM $termTableName");
     List<Term> dbTerms = [];
     for (Map<String, dynamic> item in result) {
       dbTerms.add(new Term.fromMap(item));
@@ -182,7 +174,8 @@ class TermDatabase {
     return dbTerms;
   }
 
-  /// Get all terms from local database, return a list with all the terms
+  /// Gets tag name list from server, returns map of names to list of terms
+  /// with that tag
   Future<Map<String, List<Term>>> getTags() async {
     final url = 'https://tech-terms.herokuapp.com/get_tag_names';
     return await http.get(url).then((response) async {
@@ -198,16 +191,19 @@ class TermDatabase {
     });
   }
 
+  /// Returns list of terms with tag [tagName]
   Future<List<Term>> getTermsForTag(String tagName) async {
     var db = await _getDb();
-    var result = await db.rawQuery(
-        'SELECT ${Tag.db_term_id} FROM $tableName1 WHERE ${Tag.db_name} = "$tagName"');
+    var result =
+        await db.rawQuery("SELECT ${Tag.db_term_id} FROM $tagTableName "
+            "WHERE ${Tag.db_name} = '$tagName'");
+
     List<String> termIDs = [];
     result.forEach((item) {
       termIDs.add(item[Tag.db_term_id]);
     });
-    List<Term> termList = [];
 
+    List<Term> termList = [];
     termIDs.forEach((id) {
       termList.add(_cachedTerms.firstWhere((t) => t.id == id));
     });
@@ -216,14 +212,13 @@ class TermDatabase {
     return termList;
   }
 
-  /// Get most recent terms from server and return them in a list
+  /// Gets terms, tags, and relations from server, returns them in a map
   Future<Map<String, dynamic>> addTermsFromServer() async {
     final termURL = 'https://tech-terms.herokuapp.com/get_terms';
     final tagsURL = 'https://tech-terms.herokuapp.com/get_tags';
     final relatedURL = 'https://tech-terms.herokuapp.com/get_related';
 
     var terms = await http.get(termURL).then((response) {
-      print("received terms response");
       List<Term> termList = [];
       json.decode(response.body).forEach((termJson) {
         termList.add(Term.fromJson(termJson));
@@ -232,7 +227,6 @@ class TermDatabase {
     });
 
     var tags = await http.get(tagsURL).then((response) {
-      print("received tags response");
       List<Tag> tagList = [];
       json.decode(response.body).forEach((tagJson) {
         tagList.add(Tag.fromJson(tagJson));
@@ -241,7 +235,6 @@ class TermDatabase {
     });
 
     var related = await http.get(relatedURL).then((response) {
-      print("received related response");
       List<Relation> relationList = [];
       json.decode(response.body).forEach((relationJson) {
         relationList.add(Relation.fromJson(relationJson));
@@ -285,12 +278,11 @@ class TermDatabase {
     return [term1, term2, term3, term4];
   }
 
-  //TODO escape not allowed characters eg. ' " '
-  /// Inserts or replaces the book.
+  /// Inserts or replaces [term] in local database
   Future updateTerm(Term term) async {
     await db.rawInsert(
         'INSERT OR REPLACE INTO '
-        '$tableName0(${Term.db_id}, ${Term.db_name}, ${Term.db_definition}, ${Term.db_maker}, ${Term.db_year}, ${Term.db_abbreviation})'
+        '$termTableName(${Term.db_id}, ${Term.db_name}, ${Term.db_definition}, ${Term.db_maker}, ${Term.db_year}, ${Term.db_abbreviation})'
         ' VALUES(?, ?, ?, ?, ?, ?)',
         [
           term.id,
@@ -302,18 +294,20 @@ class TermDatabase {
         ]);
   }
 
+  /// Inserts or replaces [tag] in local database
   Future updateTag(Tag tag) async {
     await db.rawInsert(
         'INSERT OR REPLACE INTO '
-        '$tableName1(${Tag.db_id}, ${Tag.db_name}, ${Tag.db_term_id})'
+        '$tagTableName(${Tag.db_id}, ${Tag.db_name}, ${Tag.db_term_id})'
         ' VALUES(?, ?, ?)',
         [tag.id, tag.name, tag.termID]);
   }
 
+  /// Inserts or replaces [relation] in local database
   Future updateRelation(Relation relation) async {
     await db.rawInsert(
         'INSERT OR REPLACE INTO '
-        '$tableName2(${Relation.db_id}, ${Relation.db_from_term}, ${Relation.db_to_term})'
+        '$relationTableName(${Relation.db_id}, ${Relation.db_from_term}, ${Relation.db_to_term})'
         ' VALUES(?, ?, ?)',
         [relation.id, relation.fromTermID, relation.toTermName]);
   }
