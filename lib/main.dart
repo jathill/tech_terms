@@ -24,7 +24,6 @@ class TermDictionary extends StatefulWidget {
 
 class TermDictionaryState extends State<TermDictionary>
     with SingleTickerProviderStateMixin {
-
   bool isLoading = false;
   TabController tabController;
   List<Term> terms = new List();
@@ -57,16 +56,20 @@ class TermDictionaryState extends State<TermDictionary>
       appBar: new AppBar(
         title: new Text('TechTerms'),
       ),
-      body: isLoading? new Center(child: new CircularProgressIndicator()) : new TabBarView(
-        children: <Widget>[_buildFullTermList(), _buildTagList()],
-        controller: tabController,
-      ),
-      bottomNavigationBar: new Hero(tag: "bottom", child: new Material(
-          color: Colors.amber,
-          child: new TabBar(controller: tabController, tabs: <Widget>[
-            new Tab(child: new Icon(Icons.home)),
-            new Tab(child: new Icon(Icons.menu))
-          ]))),
+      body: isLoading
+          ? new Center(child: new CircularProgressIndicator())
+          : new TabBarView(
+              children: <Widget>[_buildFullTermList(), _buildTagList()],
+              controller: tabController,
+            ),
+      bottomNavigationBar: new Hero(
+          tag: "bottom",
+          child: new Material(
+              color: Colors.amber,
+              child: new TabBar(controller: tabController, tabs: <Widget>[
+                new Tab(child: new Icon(Icons.home)),
+                new Tab(child: new Icon(Icons.menu))
+              ]))),
     );
   }
 
@@ -120,10 +123,39 @@ class TermDictionaryState extends State<TermDictionary>
     Navigator.of(context).push(
       new MaterialPageRoute(builder: (context) {
         var defContent;
+        var mainColumn = new Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[]
+        );
 
         if (t.abbreviation != null) {
+          mainColumn.children.add(new Padding(
+              padding: new EdgeInsets.only(bottom: 32.0),
+              child: new Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  new Container(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: new Text(
+                      Term.db_abbreviation,
+                      style: new TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  new Text(
+                    t.abbreviation,
+                    style: new TextStyle(
+                      color: Colors.grey[500],
+                    ),
+                  ),
+                ],
+              )));
+        }
+
+        if (t.abbreviates != null) {
           Term linkedAbbr =
-              terms.firstWhere((Term term) => term.name == t.abbreviation);
+              terms.firstWhere((Term term) => term.name == t.abbreviates);
           Text defText = new Text(t.definition);
           defContent = new FlatButton(
               textColor: Colors.lightBlue,
@@ -154,12 +186,7 @@ class TermDictionaryState extends State<TermDictionary>
               ],
             ));
 
-        var mainColumn = new Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            definitionWidget,
-          ],
-        );
+        mainColumn.children.add(definitionWidget);
 
         if (t.maker != null) {
           mainColumn.children.add(new Padding(
@@ -269,41 +296,42 @@ class TermDictionaryState extends State<TermDictionary>
   }
 
   Widget _getSubviewBottomBar() {
-    return new Hero(tag: "bottom", child: new Material(
-        color: Colors.amber,
-        child: new TabBar(controller: tabController, tabs: <Widget>[
-          new GestureDetector(
-              child: new Container(
-                  color: Colors.amber,
-                  width: double.infinity,
-                  child: new Tab(
-                    child: new Icon(Icons.home),
-                  )),
-              onTap: () {
-                while (Navigator.of(context).canPop()) {
-                  Navigator.of(context).pop();
-                }
-                setState(() {
-                  if (tabController.index == 1) tabController.index = 0;
-                });
-
-              }),
-          new GestureDetector(
-              child: new Container(
-                  color: Colors.amber,
-                  width: double.infinity,
-                  child: new Tab(
-                    child: new Icon(Icons.menu),
-                  )),
-              onTap: () {
-                while (Navigator.of(context).canPop()) {
-                  Navigator.of(context).pop();
-                }
-                setState(() {
-                  if (tabController.index == 0) tabController.index = 1;
-                });
-              })
-        ])));
+    return new Hero(
+        tag: "bottom",
+        child: new Material(
+            color: Colors.amber,
+            child: new TabBar(controller: tabController, tabs: <Widget>[
+              new GestureDetector(
+                  child: new Container(
+                      color: Colors.amber,
+                      width: double.infinity,
+                      child: new Tab(
+                        child: new Icon(Icons.home),
+                      )),
+                  onTap: () {
+                    while (Navigator.of(context).canPop()) {
+                      Navigator.of(context).pop();
+                    }
+                    setState(() {
+                      if (tabController.index == 1) tabController.index = 0;
+                    });
+                  }),
+              new GestureDetector(
+                  child: new Container(
+                      color: Colors.amber,
+                      width: double.infinity,
+                      child: new Tab(
+                        child: new Icon(Icons.menu),
+                      )),
+                  onTap: () {
+                    while (Navigator.of(context).canPop()) {
+                      Navigator.of(context).pop();
+                    }
+                    setState(() {
+                      if (tabController.index == 0) tabController.index = 1;
+                    });
+                  })
+            ])));
   }
 
   void _tappedTag(String tagName) {

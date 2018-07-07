@@ -71,6 +71,7 @@ class TermDatabase {
         "${Term.db_definition} TEXT NOT NULL,"
         "${Term.db_maker} TEXT,"
         "${Term.db_year} INTEGER,"
+        "${Term.db_abbreviates} TEXT,"
         "${Term.db_abbreviation} TEXT"
         ")");
     await db.execute("CREATE TABLE $tagTableName ("
@@ -282,14 +283,15 @@ class TermDatabase {
   Future updateTerm(Term term) async {
     await db.rawInsert(
         'INSERT OR REPLACE INTO '
-        '$termTableName(${Term.db_id}, ${Term.db_name}, ${Term.db_definition}, ${Term.db_maker}, ${Term.db_year}, ${Term.db_abbreviation})'
-        ' VALUES(?, ?, ?, ?, ?, ?)',
+        '$termTableName(${Term.db_id}, ${Term.db_name}, ${Term.db_definition}, ${Term.db_maker}, ${Term.db_year}, ${Term.db_abbreviates}, ${Term.db_abbreviation})'
+        ' VALUES(?, ?, ?, ?, ?, ?, ?)',
         [
           term.id,
           term.name,
           term.definition,
           term.maker,
           term.year,
+          term.abbreviates,
           term.abbreviation
         ]);
   }

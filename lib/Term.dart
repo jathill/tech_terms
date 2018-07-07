@@ -54,11 +54,12 @@ class Term extends Comparable {
   static const db_id = "id";
   static const db_maker = "Creator";
   static const db_year = "Year_Created";
+  static const db_abbreviates = "Abbreviates";
   static const db_abbreviation = "Abbreviation";
   static const db_tags = "Tags";
   static const db_related = "Related";
 
-  String name, id, definition, maker, abbreviation;
+  String name, id, definition, maker, abbreviates, abbreviation;
   int year;
   List<String> tags;
   List<Term> related;
@@ -71,6 +72,7 @@ class Term extends Comparable {
       this.year,
       this.tags,
       this.related,
+      this.abbreviates,
       this.abbreviation});
 
   factory Term.fromJson(Map<String, dynamic> json) {
@@ -80,7 +82,9 @@ class Term extends Comparable {
     if (json.containsKey("year")) term.year = json['year'];
     if (json.containsKey("tags")) term.tags = json['tags'];
     if (json.containsKey("related")) term.related = json['related'];
-    if (json.containsKey("abbr")) term.abbreviation = json['abbr'];
+    if (json.containsKey("abbreviates")) term.abbreviates = json['abbreviates'];
+    if (json.containsKey("abbreviation"))
+      term.abbreviation = json['abbreviation'];
     return term;
   }
 
@@ -91,6 +95,7 @@ class Term extends Comparable {
           id: map[db_id].toString(),
           maker: map[db_maker],
           year: map[db_year],
+          abbreviates: map[db_abbreviates],
           abbreviation: map[db_abbreviation],
         );
 
