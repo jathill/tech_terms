@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:tech_terms/Term.dart';
 import 'package:tech_terms/database.dart';
+import 'package:tech_terms/widget/Abbreviation.dart';
+import 'package:tech_terms/widget/Definition.dart';
+import 'package:tech_terms/widget/Maker.dart';
+import 'package:tech_terms/widget/Related.dart';
+import 'package:tech_terms/widget/Tags.dart';
+import 'package:tech_terms/widget/Year.dart';
 
 void main() => runApp(new MyApp());
 
@@ -24,11 +30,11 @@ class TermDictionary extends StatefulWidget {
 
 class TermDictionaryState extends State<TermDictionary>
     with SingleTickerProviderStateMixin {
-  bool isLoading = false;
+  final _biggerFont = const TextStyle(fontSize: 18.0);
   TabController tabController;
+  bool isLoading = false;
   List<Term> terms = new List();
   Map<String, List<Term>> tags = new Map();
-  final _biggerFont = const TextStyle(fontSize: 18.0);
 
   @override
   void initState() {
@@ -36,9 +42,9 @@ class TermDictionaryState extends State<TermDictionary>
     tabController = new TabController(length: 2, vsync: this);
     setState(() => isLoading = true);
     var db = TermDatabase.get();
+
     db.init().then((context) {
       db.getAllTerms().then((dbTerms) {
-        if (dbTerms == null) return;
         setState(() => terms = dbTerms);
       });
       db.getTags().then((tagMap) {
@@ -66,10 +72,9 @@ class TermDictionaryState extends State<TermDictionary>
           tag: "bottom",
           child: new Material(
               color: Colors.amber,
-              child: new TabBar(controller: tabController, tabs: <Widget>[
-                new Tab(child: new Icon(Icons.home)),
-                new Tab(child: new Icon(Icons.menu))
-              ]))),
+              child: new TabBar(
+                  controller: tabController,
+                  tabs: <Widget>[new Tab0(), new Tab1()]))),
     );
   }
 
@@ -122,167 +127,37 @@ class TermDictionaryState extends State<TermDictionary>
   void _tappedTerm(Term t) {
     Navigator.of(context).push(
       new MaterialPageRoute(builder: (context) {
-        var defContent;
-        var mainColumn = new Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[]
-        );
+        var col = new Column(
+            crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[]);
 
         if (t.abbreviation != null) {
-          mainColumn.children.add(new Padding(
-              padding: new EdgeInsets.only(bottom: 32.0),
-              child: new Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  new Container(
-                    padding: const EdgeInsets.only(bottom: 8.0),
-                    child: new Text(
-                      Term.db_abbreviation,
-                      style: new TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  new Text(
-                    t.abbreviation,
-                    style: new TextStyle(
-                      color: Colors.grey[500],
-                    ),
-                  ),
-                ],
-              )));
+          col.children.add(new Abbreviation(term: t));
         }
 
-        if (t.abbreviates != null) {
-          Term linkedAbbr =
-              terms.firstWhere((Term term) => term.name == t.abbreviates);
-          Text defText = new Text(t.definition);
-          defContent = new FlatButton(
-              textColor: Colors.lightBlue,
-              onPressed: () => _tappedTerm(linkedAbbr),
-              child: defText);
-        } else {
-          defContent = new Text(
-            t.definition,
-            style: new TextStyle(
-              color: Colors.grey[500],
-            ),
-          );
-        }
-
-        var definitionWidget = new Padding(
-            padding: new EdgeInsets.only(bottom: 32.0),
-            child: new Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                new Container(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: new Text(Term.db_definition,
-                      style: new TextStyle(
-                        fontWeight: FontWeight.bold,
-                      )),
-                ),
-                defContent
-              ],
-            ));
-
-        mainColumn.children.add(definitionWidget);
+        col.children.add(
+            new Definition(term: t, termList: terms, onPressed: _tappedTerm));
 
         if (t.maker != null) {
-          mainColumn.children.add(new Padding(
-              padding: new EdgeInsets.only(bottom: 32.0),
-              child: new Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  new Container(
-                    padding: const EdgeInsets.only(bottom: 8.0),
-                    child: new Text(
-                      Term.db_maker,
-                      style: new TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  new Text(
-                    t.maker,
-                    style: new TextStyle(
-                      color: Colors.grey[500],
-                    ),
-                  ),
-                ],
-              )));
+          col.children.add(new Maker(term: t));
         }
 
         if (t.year != null) {
-          mainColumn.children.add(new Padding(
-              padding: new EdgeInsets.only(bottom: 32.0),
-              child: new Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  new Container(
-                    padding: const EdgeInsets.only(bottom: 8.0),
-                    child: new Text(
-                      Term.db_year.replaceAll(new RegExp(r'_'), ' '),
-                      style: new TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  new Text(
-                    t.year.toString(),
-                    style: new TextStyle(
-                      color: Colors.grey[500],
-                    ),
-                  ),
-                ],
-              )));
+          col.children.add(new Year(term: t));
         }
 
         if (t.tags != null) {
-          mainColumn.children.add(new Padding(
-              padding: new EdgeInsets.only(bottom: 32.0),
-              child: new Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  new Container(
-                    padding: const EdgeInsets.only(bottom: 8.0),
-                    child: new Text(
-                      Term.db_tags,
-                      style: new TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  new Wrap(spacing: 8.0, children: buildTagButtons(t))
-                ],
-              )));
+          col.children.add(new Tags(
+            term: t,
+            onPressed: _tappedTag,
+          ));
         }
 
         if (t.related != null) {
-          mainColumn.children.add(new Padding(
-              padding: new EdgeInsets.only(bottom: 32.0),
-              child: new Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  new Container(
-                    padding: const EdgeInsets.only(bottom: 8.0),
-                    child: new Text(
-                      Term.db_related,
-                      style: new TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  new Wrap(
-                      spacing: 8.0,
-                      runSpacing: 4.0,
-                      children: buildRelatedButtons(t))
-                ],
-              )));
+          col.children.add(new Related(term: t, onPressed: _tappedTerm));
         }
 
-        var body = new Container(
-            padding: const EdgeInsets.all(32.0), child: mainColumn);
+        var body =
+            new Container(padding: const EdgeInsets.all(32.0), child: col);
 
         return new Scaffold(
           appBar: new AppBar(
@@ -305,9 +180,7 @@ class TermDictionaryState extends State<TermDictionary>
                   child: new Container(
                       color: Colors.amber,
                       width: double.infinity,
-                      child: new Tab(
-                        child: new Icon(Icons.home),
-                      )),
+                      child: new Tab0()),
                   onTap: () {
                     while (Navigator.of(context).canPop()) {
                       Navigator.of(context).pop();
@@ -320,9 +193,7 @@ class TermDictionaryState extends State<TermDictionary>
                   child: new Container(
                       color: Colors.amber,
                       width: double.infinity,
-                      child: new Tab(
-                        child: new Icon(Icons.menu),
-                      )),
+                      child: new Tab1()),
                   onTap: () {
                     while (Navigator.of(context).canPop()) {
                       Navigator.of(context).pop();
@@ -347,32 +218,18 @@ class TermDictionaryState extends State<TermDictionary>
       }),
     );
   }
+}
 
-  List<Widget> buildTagButtons(Term t) {
-    List<Widget> buttons = [];
-    t.tags.forEach((String name) {
-      final button = new OutlineButton(
-        onPressed: () => _tappedTag(name),
-        borderSide: new BorderSide(color: Colors.lightBlue),
-        textColor: Colors.blueGrey,
-        child: new Text(name),
-      );
-      buttons.add(button);
-    });
-    return buttons;
+class Tab0 extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return new Tab(icon: new Icon(Icons.home));
   }
+}
 
-  List<Widget> buildRelatedButtons(Term t) {
-    List<Widget> buttons = [];
-    t.related.forEach((Term relatedTerm) {
-      final button = new OutlineButton(
-        onPressed: () => _tappedTerm(relatedTerm),
-        borderSide: new BorderSide(color: Colors.lightBlue),
-        textColor: Colors.blueGrey,
-        child: new Text(relatedTerm.name),
-      );
-      buttons.add(button);
-    });
-    return buttons;
+class Tab1 extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return new Tab(icon: new Icon(Icons.menu));
   }
 }
