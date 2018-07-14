@@ -8,6 +8,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:tech_terms/Term.dart';
 import 'package:http/http.dart' as http;
 
+typedef Future FutureFunction();
+
 class TermDatabase {
   static final TermDatabase _termDatabase = new TermDatabase._internal();
 
@@ -16,8 +18,8 @@ class TermDatabase {
   final String relationTableName = "Related";
 
   Database db;
+  int notificationCode;
   List<Term> _cachedTerms;
-
   bool didInit = false;
 
   static TermDatabase get() {
@@ -48,11 +50,16 @@ class TermDatabase {
 
     // Checks if local database version is up-to-date, and downloads updated
     // terms if necessary
-    if (serverVersion == -1)
-      print("Error: Could not contact server");
-    else if (serverVersion != localVersion) {
-      await updateDatabase();
+    if (serverVersion == -1) {
+      if (localVersion == 0) {
+        await updateDatabase(addTermsFromFile);
+        notificationCode = 0;
+      } else
+        notificationCode = 1;
+    } else if (serverVersion != localVersion) {
+      await updateDatabase(addTermsFromServer);
       getVersionFile().then((file) => file.writeAsString("$serverVersion"));
+      notificationCode = 2;
     }
 
     didInit = true;
@@ -87,8 +94,13 @@ class TermDatabase {
   }
 
   /// Get updated terms from server and add to local database
-  Future<void> updateDatabase() async {
-    await addTermsFromServer().then((serverDict) {
+  Future<void> updateDatabase(FutureFunction addTerms) async {
+    await addTerms().then((serverDict) {
+      if (serverDict == null) {
+        notificationCode = 1;
+        return;
+      }
+      
       final termList = serverDict['terms'];
       final tagList = serverDict['tags'];
       final relationList = serverDict['related'];
@@ -237,6 +249,8 @@ class TermDatabase {
     final relatedURL = 'https://tech-terms.herokuapp.com/get_related';
 
     var terms = await http.get(termURL).then((response) {
+      if (response.statusCode != 200) return null;
+
       List<Term> termList = [];
       json.decode(response.body).forEach((termJson) {
         termList.add(Term.fromJson(termJson));
@@ -245,6 +259,8 @@ class TermDatabase {
     });
 
     var tags = await http.get(tagsURL).then((response) {
+      if (response.statusCode != 200) return null;
+
       List<Tag> tagList = [];
       json.decode(response.body).forEach((tagJson) {
         tagList.add(Tag.fromJson(tagJson));
@@ -253,6 +269,8 @@ class TermDatabase {
     });
 
     var related = await http.get(relatedURL).then((response) {
+      if (response.statusCode != 200) return null;
+
       List<Relation> relationList = [];
       json.decode(response.body).forEach((relationJson) {
         relationList.add(Relation.fromJson(relationJson));

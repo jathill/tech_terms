@@ -35,6 +35,7 @@ class TermDictionaryState extends State<TermDictionary>
   bool isLoading = false;
   List<Term> terms = new List();
   Map<String, List<Term>> tags = new Map();
+  BuildContext _scaffoldContext;
 
   @override
   void initState() {
@@ -51,6 +52,21 @@ class TermDictionaryState extends State<TermDictionary>
         setState(() {
           tags = tagMap;
           isLoading = false;
+
+          switch (db.notificationCode) {
+            case 0:
+              showMessage(
+                  "Could not contact server: using sample terms", Colors.red);
+              break;
+            case 1:
+              showMessage("Could not contact server: terms may be out-of-date",
+                  Colors.red);
+              break;
+            case 2:
+              showMessage("Updated terms", Colors.green);
+              break;
+            default:
+          }
         });
       });
     });
@@ -62,12 +78,15 @@ class TermDictionaryState extends State<TermDictionary>
       appBar: new AppBar(
         title: new Text('TechTerms'),
       ),
-      body: isLoading
-          ? new Center(child: new CircularProgressIndicator())
-          : new TabBarView(
-              children: <Widget>[_buildFullTermList(), _buildTagList()],
-              controller: tabController,
-            ),
+      body: new Builder(builder: (BuildContext context) {
+        _scaffoldContext = context;
+        return isLoading
+            ? new Center(child: new CircularProgressIndicator())
+            : new TabBarView(
+                children: <Widget>[_buildFullTermList(), _buildTagList()],
+                controller: tabController,
+              );
+      }),
       bottomNavigationBar: new Hero(
           tag: "bottom",
           child: new Material(
@@ -76,6 +95,13 @@ class TermDictionaryState extends State<TermDictionary>
                   controller: tabController,
                   tabs: <Widget>[new Tab0(), new Tab1()]))),
     );
+  }
+
+  void showMessage(String msg, Color c) {
+    Scaffold.of(_scaffoldContext).showSnackBar(new SnackBar(
+        content: new Text(msg),
+        duration: new Duration(seconds: 3),
+        backgroundColor: c));
   }
 
   Widget _buildFullTermList() {
