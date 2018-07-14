@@ -80,8 +80,6 @@ class Term extends Comparable {
         name: json['name'], definition: json['definition'], id: json['id']);
     if (json.containsKey("maker")) term.maker = json['maker'];
     if (json.containsKey("year")) term.year = json['year'];
-    if (json.containsKey("tags")) term.tags = json['tags'];
-    if (json.containsKey("related")) term.related = json['related'];
     if (json.containsKey("abbreviates")) term.abbreviates = json['abbreviates'];
     if (json.containsKey("abbreviation"))
       term.abbreviation = json['abbreviation'];

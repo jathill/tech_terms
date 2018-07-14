@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/services.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
@@ -41,13 +42,8 @@ class TermDatabase {
     db = await openDatabase(path,
         version: 1, onCreate: (Database db, int version) => createDatabase(db));
 
-//    await addTermsFromFile().then((termList) {
-//      termList.forEach((t) => updateTerm(t));
-//    });
-
-    final File versionFile = File("${documentsDirectory.path}/version.txt");
     final int serverVersion = await getServerVersion();
-    final int localVersion = await getLocalVersion(versionFile);
+    final int localVersion = await getLocalVersion();
     print("Server version $serverVersion; Local version $localVersion");
 
     // Checks if local database version is up-to-date, and downloads updated
@@ -56,7 +52,7 @@ class TermDatabase {
       print("Error: Could not contact server");
     else if (serverVersion != localVersion) {
       await updateDatabase();
-      versionFile.writeAsString("$serverVersion");
+      getVersionFile().then((file) => file.writeAsString("$serverVersion"));
     }
 
     didInit = true;
@@ -103,6 +99,11 @@ class TermDatabase {
     });
   }
 
+  Future<File> getVersionFile() async {
+    Directory documentsDirectory = await getApplicationDocumentsDirectory();
+    return File("${documentsDirectory.path}/version.txt");
+  }
+
   /// Returns server database version
   Future<int> getServerVersion() async {
     final url = 'https://tech-terms.herokuapp.com/get_version';
@@ -113,7 +114,8 @@ class TermDatabase {
   }
 
   /// If [file] not found, returns 0, else returns local DB version from [file]
-  Future<int> getLocalVersion(File file) async {
+  Future<int> getLocalVersion() async {
+    File file = await getVersionFile();
     try {
       String contents = await file.readAsString();
       return int.parse(contents);
@@ -177,11 +179,16 @@ class TermDatabase {
 
   /// Gets tag name list from server, returns map of names to list of terms
   /// with that tag
-  Future<Map<String, List<Term>>> getTags() async {
+  Future<Map<String, List<Term>>> getTagMap() async {
     final url = 'https://tech-terms.herokuapp.com/get_tag_names';
     return await http.get(url).then((response) async {
-      //if (response.statusCode != 200) getFromDB();
-      List<String> tagNames = List<String>.from(json.decode(response.body));
+      List<String> tagNames;
+      Directory documentsDirectory = await getApplicationDocumentsDirectory();
+
+      if (response.statusCode != 200 || await getLocalVersion() == 0)
+        tagNames = await getTagNamesFromDB();
+      else
+        tagNames = List<String>.from(json.decode(response.body));
 
       Map<String, List<Term>> tagMap = {};
       await Future.forEach(tagNames, (String name) async {
@@ -192,6 +199,18 @@ class TermDatabase {
     });
   }
 
+  Future<List<String>> getTagNamesFromDB() async {
+    var db = await _getDb();
+    var result = await db.rawQuery("SELECT DISTINCT ${Tag.db_name} "
+        "FROM $tagTableName ORDER BY ${Tag.db_name}");
+
+    List<String> tagNames = [];
+    result.forEach((item) => tagNames.add(item[Tag.db_name]));
+    tagNames.sort();
+
+    return tagNames;
+  }
+
   /// Returns list of terms with tag [tagName]
   Future<List<Term>> getTermsForTag(String tagName) async {
     var db = await _getDb();
@@ -200,9 +219,7 @@ class TermDatabase {
             "WHERE ${Tag.db_name} = '$tagName'");
 
     List<String> termIDs = [];
-    result.forEach((item) {
-      termIDs.add(item[Tag.db_term_id]);
-    });
+    result.forEach((item) => termIDs.add(item[Tag.db_term_id]));
 
     List<Term> termList = [];
     termIDs.forEach((id) {
@@ -247,36 +264,38 @@ class TermDatabase {
   }
 
   /// Get most recent terms from file and return them in a list
-  Future<List<Term>> addTermsFromFile() async {
-    Term term1 = new Term(
-        name: "C#",
-        definition:
-            "High level programming language within the .NET framework.",
-        id: "1",
-        maker: "Microsoft",
-        year: 2000,
-        tags: ["Programming Languages"]);
-    Term term2 = new Term(
-        name: "Ruby on Rails",
-        definition: "Server-side web application framework written in Ruby.",
-        id: "2",
-        maker: "David Heinemmeier Hansson",
-        year: 2005,
-        tags: ["Application Frameworks"]);
-    Term term3 = new Term(
-        name: "SQL",
-        definition: "see Structured Query Language",
-        id: "3",
-        abbreviation: "Structured Query Language");
-    Term term4 = new Term(
-        name: "Git",
-        definition:
-            "Version control system for tracking changes in files. Primarily used for source code management.",
-        id: "4",
-        maker: "Linus Torvalds",
-        year: 2005);
+  Future<Map<String, dynamic>> addTermsFromFile() async {
+    String contents = await rootBundle.loadString("assets/sampleData.json");
+    List<Term> terms = [];
+    List<Tag> tags = [];
+    List<Relation> related = [];
+    int tagID = 1000;
+    int relatedID = 2000;
 
-    return [term1, term2, term3, term4];
+    jsonDecode(contents).forEach((termJson) {
+      Term term = Term.fromJson(termJson);
+      terms.add(term);
+
+      if (termJson.containsKey("tags")) {
+        termJson["tags"].forEach((tagName) {
+          tags.add(Tag(name: tagName, id: tagID.toString(), termID: term.id));
+        });
+      }
+      if (termJson.containsKey("related")) {
+        termJson["related"].forEach((relation) {
+          related.add(Relation(
+              id: relatedID.toString(),
+              fromTermID: term.id,
+              toTermName: relation));
+        });
+      }
+      tagID++;
+      relatedID++;
+    });
+
+    terms.sort();
+
+    return {"terms": terms, "tags": tags, "related": related};
   }
 
   /// Inserts or replaces [term] in local database

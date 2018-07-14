@@ -1,0 +1,358 @@
+[
+
+	{
+		"id": "1",
+		"name": "Ruby",
+		"definition": "High-level object oriented programming language. Supports multiple paradigms, e.g. functional, imperative",
+		"maker": "Yukihiro 'Matz' Matsumoto",
+		"year": 1995,
+		"tags": ["Programming Languages"],
+		"related": ["Ruby on Rails"]
+	},
+	{
+		"id": "3",
+		"name": "Android",
+		"definition": "Mobile operating system based on the Linux kernel",
+		"maker": "Google",
+		"year": 2008,
+		"tags": ["Mobile", "Operating Systems"],
+		"related": ["iOS"]
+	},
+	{
+		"id": "4",
+		"name": "Structured Query Language",
+		"definition": "Special programming language for managing data in a relational database management system (RDBMS), or for stream processing in a relational data stream management system (RDSMS).",
+		"year": 1986,
+		"tags": ["Query Languages"],
+		"related": ["MySQL", "Microsoft SQL Server"],
+		"abbreviation": "SQL"
+	},
+	{
+		"id": "5",
+		"name": "SQL",
+		"definition": "see Structured Query Language",
+		"tags": ["Abbreviations"],
+		"abbreviates": "Structured Query Language"
+	},
+	{
+		"id": "6",
+		"name": "C#",
+		"definition": "High level programming language within the .NET framework.",
+		"maker": "Microsoft",
+		"year": 2000,
+		"tags": ["Programming Languages"]
+	},
+	{
+		"id": "7",
+		"name": "Procedural Language",
+		"definition": "Property of a programming language where the language executes as a sequence of statements that lead to a result. Typically uses variables and loops.",
+		"tags": ["Concepts", "Language Properties"],
+		"related": ["Functional Language"]
+	},
+	{
+		"id": "8",
+		"name": "Ruby on Rails",
+		"definition": "Server-side web application framework written in Ruby",
+		"maker": "David Heinemmeier Hansson",
+		"year": 2005,
+		"tags": ["Application Frameworks"],
+		"related": ["Ruby", "Model-View-Controller"]
+	},
+	{
+		"id": "9",
+		"name": "Git",
+		"definition": "Version control system for tracking changes in files. Primarily used for source code management.",
+		"maker": "Linus Torvalds",
+		"year": 2005,
+		"tags": ["Tools", "Version Control"]
+	},
+	{
+		"id": "10",
+		"name": "GitHub",
+		"definition": "Web-based repositroy hosting service for Git version control.",
+		"maker": "GitHub, Inc.",
+		"year": 2008,
+		"tags": ["Tools", "Version Control", "Web Hosting"],
+		"related": ["Git"]
+	},
+	{
+		"id": "11",
+		"name": "Unity",
+		"definition": "Cross-platform game engine",
+		"maker": "Unity Technologies",
+		"year": 2005,
+		"tags": ["Game Engines"]
+	},
+	{
+		"id": "12",
+		"name": "Functional Language",
+		"definition": "Programming paradigm where computation is treated as evaluation of mathematical functions, avoids changing state and mutable data, and programming is done declaratively. Expressions or declarations are used instead of statements.",
+		"tags": ["Concepts", "Language Properties"],
+		"related": ["Procedural Language", "Lisp", "Haskell"]
+	},
+	{
+		"id": "13",
+		"name": "Java",
+		"definition": "High-level, object oriented programming language.",
+		"maker": "Sun Microsystems; Oracle",
+		"year": 1995,
+		"tags": ["Programming Languages"]
+	},
+	{
+		"id": "14",
+		"name": "Python",
+		"definition": "High-level, interpreted programming language.",
+		"maker": "Guido van Rossum; Python Software Foundation",
+		"year": 1991,
+		"tags": ["Programming Languages"],
+		"related": ["Django", "Flask"]
+	},
+	{
+		"id": "16",
+		"name": "Microsoft SQL Server",
+		"definition": "A prprietary relational database management sytem.",
+		"maker": "Microsoft",
+		"year": 1989,
+		"tags": ["Databases"],
+		"related": ["Relational Database Management System", "Structured Query Language"]
+	},
+	{
+		"id": "17",
+		"name": "RDBMS",
+		"definition": "see Relational Database Management System",
+		"tags": ["Abbreviations"],
+		"abbreviates": "Relational Database Management System"
+	},
+	{
+		"id": "18",
+		"name": "Relational Database Management System",
+		"definition": "Database management system based on a relational model.",
+		"maker": "Edgar F. Codd; IBM; Oracle",
+		"year": 1974,
+		"tags": ["Databases"],
+		"related": ["MySQL", "Microsoft SQL Server", "Structured Query Language"],
+		"abbreviation" : "RDBMS"
+	},
+	{
+		"id": "19",
+		"name": "OOP",
+		"definition": "see Object Oriented Programming",
+		"tags": ["Abbreviations"],
+		"abbreviates": "Object Oriented Programming"
+	},
+	{
+		"id": "30",
+		"name": "Object Oriented Programming",
+		"definition": "Programming paradigm based on 'objects' which contain data and methods.",
+		"tags": ["Concepts"],
+		"abbreviation": "OOP"
+	},
+	{
+		"id": "20",
+		"name": "iOS",
+		"definition": "Mobile operating system for Apple mobile devices.",
+		"maker": "Apple Inc.",
+		"year": 2007,
+		"tags": ["Mobile", "Operating Systems"],
+		"related": ["Android"]
+	},
+	{
+		"id": "21",
+		"name": "Front-end",
+		"definition": "Web development where HTML, CSS, and JavaScript are used to produce a website or web application",
+		"tags": ["Concepts"],
+		"related": ["Back-end"]
+	},
+	{
+		"id": "2",
+		"name": "Back-end",
+		"definition": "Data-access and server logic layers in web development.",
+		"tags": ["Concepts"],
+		"related": ["Front-end"]
+	},
+	{
+		"id": "22",
+		"name": "HTML",
+		"definition": "see Hypertext Markup Language",
+		"tags": ["Abbreviations"],
+		"abbreviates": "Hypertext Markup Language"
+	},
+	{
+		"id": "23",
+		"name": "Hypertext Markup Language",
+		"definition": "Markup language for creating web pages and web applications.",
+		"maker": "World Wide Web Consortium; Web Hypertext Application Technology Working Group",
+		"year": 1993,
+		"tags": ["Markup Languages"],
+		"related": ["Markup Language"],
+		"abbreviation": "HTML"
+	},
+	{
+		"id": "24",
+		"name": "Markup Language",
+		"definition": "System for annotating a document that is syntactially distinguishable from text, and often prescribes presentation rules for structured data.",
+		"tags": ["Concepts", "Markup Languages"],
+		"related": ["Hypertext Markup Language"]
+	},
+	{
+		"id": "25",
+		"name": "CSS",
+		"definition": "see Cascading Style Sheets",
+		"tags": ["Abbreviations"],
+		"abbreviates": "Cascading Style Sheets"
+	},
+	{
+		"id": "26",
+		"name": "Cascading Style Sheets",
+		"definition": "Style sheet language used to describe the presentation of a document written in a markup language.",
+		"maker": "Hakon Wium Lie; Bert Bos; World Wide Web Consortium",
+		"year": 1996,
+		"tags": ["Style Sheet Languages"],
+		"abbreviation": "CSS"
+	},
+	{
+		"id": "27",
+		"name": "JavaScript",
+		"definition": "High-level, interpreted programming language used in web development.",
+		"maker": "Brendan Eich; Netscape; Mozilla; Ecma International",
+		"year": 1995,
+		"tags": ["Programming Languages"],
+		"related": ["TypeScript", "ECMAScript", "jQuery"]
+	},
+	{
+		"id": "28",
+		"name": "jQuery",
+		"definition": "Open-source Javascipt library designed to simplify client-side scripting of HTML.",
+		"maker": "John Resig",
+		"year": 2006,
+		"tags": ["Libraries"],
+		"related": ["JavaScript"]
+	},
+	{
+		"id": "29",
+		"name": "AJAX",
+		"definition": "see Asynchronous JavaScript and XML",
+		"tags": ["Abbreviations"],
+		"abbreviates": "Asynchronous JavaScript and XML"
+	},
+	{
+		"id": "31",
+		"name": "Asynchronous JavaScript and XML",
+		"definition": "Set of client-side web technology that allow data to be sent and received from a server asynchronously, without disrupting the behavior of an existing page.",
+		"year": 2005,
+		"tags": ["Web Technologies"],
+		"related": ["JavaScript", "Extensible Markup Language"],
+		"abbreviation": "AJAX"
+	},
+	{
+		"id": "32",
+		"name": "REST",
+		"definition": "see Representational State Transfer",
+		"tags": ["Abbreviations"],
+		"abbreviates": "Representational State Transfer"
+	},
+	{
+		"id": "33",
+		"name": "Representational State Transfer",
+		"definition": "Architecture style for web services that calls for the manipulation of text-based web resources using stateless operations.",
+		"maker": "Roy Fielding",
+		"year": 2000,
+		"tags": ["Concepts", "Web Technologies"],
+		"abbreviation": "REST"
+	},
+	{
+		"id": "63",
+		"name": "MVC",
+		"definition": "see Model-View-Controller",
+		"tags": ["Abbreviations"],
+		"abbreviates": "Model-View-Controller"
+	},
+	{
+		"id": "64",
+		"name": "Model-View-Controller",
+		"definition": "Software concept where an application is divided into three interconnected parts to separate data from visual presentation. Model refers to underlying information, controller deals with the logic of manipulating information, and the view displays the application to the user based on the underlying data.",
+		"tags": ["Concepts"],
+		"abbreviation": "MVC"
+	},
+	{
+		"id": "65",
+		"name": "Flask",
+		"definition": "A python web application framework that is classified as a microframework because of its minimalism.",
+		"maker": "Armin Ronacher",
+		"year": 2010,
+		"tags": ["Application Frameworks"],
+		"related": ["Python", "Django"]
+	},
+	{
+		"id": "72",
+		"name": "XML",
+		"definition": "see Extensible Markup Language",
+		"tags": ["Abbreviations"],
+		"abbreviates": "Extensible Markup Language"
+	},
+	{
+		"id": "73",
+		"name": "Extensible Markup Language",
+		"definition": "Markup language that defines rules for encoding documents using a textual data format.",
+		"maker": "Tim Bray; Jean Paoli; C. M. Sperberg-McQueen; Eve Maier; Francois Yergeau; John Cowan",
+		"year": 1996,
+		"tags": ["Markup Languages"],
+		"related": ["Markup Language"],
+		"abbreviation": "XML"
+	},
+	{
+		"id": "80",
+		"name": "ECMAScript",
+		"definition": "Scripting language specification created to standardize JavaScript. JavaScript is its most common implementation, but also includes others like ActionScript.",
+		"maker": "Brendan Eich; Ecma International",
+		"year": 1997,
+		"tags": ["Language Specifications"],
+		"related": ["JavaScript", "ActionScript"]
+	},
+	{
+		"id": "81",
+		"name": "ActionScript",
+		"definition": "Object-oriented programming language within the ECMAScript specification mainly used for developing websites and software targeting Adobe Flash Player.",
+		"maker": "Gary Grossman; Macromedia Inc.",
+		"year": 1998,
+		"tags": ["Programming Languages"],
+		"related": ["JavaScript", "ECMAScript"]
+	},
+	{
+		"id": "91",
+		"name": "Clojure",
+		"definition": "Dialect of the Lisp programming language with a focus on functional programming.",
+		"maker": "Rich Hickey",
+		"year": 2007,
+		"tags": ["Programming Languages"],
+		"related": ["Lisp", "Functional Language"]
+	},
+	{
+		"id": "102",
+		"name": "Django",
+		"definition": "Open-source web application framework using Python.",
+		"maker": "Adrian Holovaty; Simon Willison; Django Software Foundation",
+		"year": 2005,
+		"tags": ["Application Frameworks"],
+		"related": ["Flask", "Python"]
+	},
+	{
+		"id": "115",
+		"name": "Haskell",
+		"definition": "Purely functional programming language.",
+		"maker": "Lennart Augustsson; Dave Barton; Brian Boutel; Warren Burton; Joseph Fasel; Kevin Hammond; Ralf Hinze; Paul Hudak; John Hughes; Thomas Johnsson; Mark Jones; Simon Peyton Jones; John Launchbury; Erik Meijer; John Peterson; Alastair Reid; Colin Runciman; Philip Wadler",
+		"year": 1990,
+		"tags": ["Programming Languages"],
+		"related": ["Functional Language"]
+	},
+	{
+		"id": "144",
+		"name": "Lisp",
+		"definition": "Family of programming languages. Second-oldest high-level language after Fortran.",
+		"maker": "John McCarthy; Steve Russell; Timothy P. Hart; Mike Levin",
+		"year": 1958,
+		"tags": ["Programming Languages"],
+		"related": ["Clojure"]
+	}
+	
+]

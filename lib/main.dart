@@ -47,7 +47,7 @@ class TermDictionaryState extends State<TermDictionary>
       db.getAllTerms().then((dbTerms) {
         setState(() => terms = dbTerms);
       });
-      db.getTags().then((tagMap) {
+      db.getTagMap().then((tagMap) {
         setState(() {
           tags = tagMap;
           isLoading = false;
@@ -140,18 +140,15 @@ class TermDictionaryState extends State<TermDictionary>
         if (t.maker != null) {
           col.children.add(new Maker(term: t));
         }
-
         if (t.year != null) {
           col.children.add(new Year(term: t));
         }
-
         if (t.tags != null) {
           col.children.add(new Tags(
             term: t,
             onPressed: _tappedTag,
           ));
         }
-
         if (t.related != null) {
           col.children.add(new Related(term: t, onPressed: _tappedTerm));
         }
