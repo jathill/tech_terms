@@ -44,6 +44,13 @@ class TermDatabase {
     db = await openDatabase(path,
         version: 1, onCreate: (Database db, int version) => createDatabase(db));
 
+    await checkVersion();
+
+    didInit = true;
+    setTags(await getAllTerms()).then((context) => setRelated(_cachedTerms));
+  }
+
+  Future checkVersion() async {
     final int serverVersion = await getServerVersion();
     final int localVersion = await getLocalVersion();
     print("Server version $serverVersion; Local version $localVersion");
@@ -61,9 +68,17 @@ class TermDatabase {
       getVersionFile().then((file) => file.writeAsString("$serverVersion"));
       notificationCode = 2;
     }
+  }
 
-    didInit = true;
-    setTags(await getAllTerms()).then((context) => setRelated(_cachedTerms));
+  Future refresh() async {
+    if (!didInit) await _init();
+
+    notificationCode = null;
+    await checkVersion();
+    if (notificationCode == 2) {
+      _cachedTerms = null;
+      setTags(await getAllTerms()).then((context) => setRelated(_cachedTerms));
+    }
   }
 
   /// Creates tables for [db] and returns it
@@ -81,13 +96,13 @@ class TermDatabase {
         "${Tag.db_id} STRING PRIMARY KEY,"
         "${Tag.db_name} TEXT NOT NULL,"
         "${Tag.db_term_id} TEXT NOT NULL,"
-        "FOREIGN KEY (${Tag.db_term_id}) REFERENCES ${termTableName} (id)"
+        "FOREIGN KEY (${Tag.db_term_id}) REFERENCES $termTableName (id)"
         ")");
     await db.execute("CREATE TABLE $relationTableName ("
         "${Relation.db_id} STRING PRIMARY KEY,"
         "${Relation.db_to_term} TEXT NOT NULL,"
         "${Relation.db_from_term} TEXT NOT NULL,"
-        "FOREIGN KEY (${Relation.db_from_term}) REFERENCES ${termTableName} (id)"
+        "FOREIGN KEY (${Relation.db_from_term}) REFERENCES $termTableName (id)"
         ")");
 
     return db;
@@ -95,15 +110,19 @@ class TermDatabase {
 
   /// Get updated terms from server and add to local database
   Future<void> updateDatabase(FutureFunction addTerms) async {
-    await addTerms().then((serverDict) {
+    await addTerms().then((serverDict) async {
       if (serverDict == null) {
         notificationCode = 1;
         return;
       }
-      
+
       final termList = serverDict['terms'];
       final tagList = serverDict['tags'];
       final relationList = serverDict['related'];
+
+      await db.rawDelete("DELETE FROM $tagTableName");
+      await db.rawDelete("DELETE FROM $relationTableName");
+      await db.rawDelete("DELETE FROM $termTableName");
 
       termList.forEach((t) => updateTerm(t));
       tagList.forEach((t) => updateTag(t));
@@ -180,6 +199,7 @@ class TermDatabase {
 
     var db = await _getDb();
     var result = await db.rawQuery("SELECT * FROM $termTableName");
+
     List<Term> dbTerms = [];
     for (Map<String, dynamic> item in result) {
       dbTerms.add(new Term.fromMap(item));

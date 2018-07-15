@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:tech_terms/Term.dart';
 import 'package:tech_terms/database.dart';
@@ -45,31 +46,22 @@ class TermDictionaryState extends State<TermDictionary>
     var db = TermDatabase.get();
 
     db.init().then((context) {
-      db.getAllTerms().then((dbTerms) {
-        setState(() => terms = dbTerms);
-      });
+      loadTerms(db);
+    });
+  }
+
+  void loadTerms(TermDatabase db) {
+    db.getAllTerms().then((dbTerms) {
+      setState(() => terms = dbTerms);
       db.getTagMap().then((tagMap) {
         setState(() {
           tags = tagMap;
           isLoading = false;
-
-          switch (db.notificationCode) {
-            case 0:
-              showMessage(
-                  "Could not contact server: using sample terms", Colors.red);
-              break;
-            case 1:
-              showMessage("Could not contact server: terms may be out-of-date",
-                  Colors.red);
-              break;
-            case 2:
-              showMessage("Updated terms", Colors.green);
-              break;
-            default:
-          }
+          switchNotification(db);
         });
       });
     });
+
   }
 
   @override
@@ -80,6 +72,7 @@ class TermDictionaryState extends State<TermDictionary>
       ),
       body: new Builder(builder: (BuildContext context) {
         _scaffoldContext = context;
+
         return isLoading
             ? new Center(child: new CircularProgressIndicator())
             : new TabBarView(
@@ -104,20 +97,39 @@ class TermDictionaryState extends State<TermDictionary>
         backgroundColor: c));
   }
 
+  void switchNotification(TermDatabase db) {
+    switch (db.notificationCode) {
+      case 0:
+        showMessage(
+            "Could not contact server: using sample terms", Colors.red);
+        break;
+      case 1:
+        showMessage("Could not contact server: terms may be out-of-date",
+            Colors.red);
+        break;
+      case 2:
+        showMessage("Updated terms", Colors.green);
+        break;
+      default:
+    }
+  }
+
   Widget _buildFullTermList() {
     return _buildTermList(terms);
   }
 
   Widget _buildTermList(termList) {
-    return new ListView.builder(
-        padding: const EdgeInsets.all(16.0),
-        itemCount: termList.length * 2,
-        itemBuilder: (context, i) {
-          // Add a one-pixel-high divider widget before each row in theListView.
-          if (i.isOdd) return new Divider();
-          final index = i ~/ 2;
-          return _buildTermRow(termList[index]);
-        });
+    return new RefreshIndicator(
+        child: new ListView.builder(
+            padding: const EdgeInsets.all(16.0),
+            itemCount: termList.length * 2,
+            itemBuilder: (context, i) {
+              // Add a one-pixel-high divider widget before each row in theListView.
+              if (i.isOdd) return new Divider();
+              final index = i ~/ 2;
+              return _buildTermRow(termList[index]);
+            }),
+        onRefresh: _handleRefresh);
   }
 
   Widget _buildTermRow(Term t) {
@@ -148,6 +160,11 @@ class TermDictionaryState extends State<TermDictionary>
       title: new Text(t, style: _biggerFont),
       onTap: () => _tappedTag(t),
     );
+  }
+
+  Future<Null> _handleRefresh() async {
+    var db = TermDatabase.get();
+    await db.refresh().then((context) => loadTerms(db));
   }
 
   void _tappedTerm(Term t) {
