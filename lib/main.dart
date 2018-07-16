@@ -33,8 +33,10 @@ class TermDictionaryState extends State<TermDictionary>
     with SingleTickerProviderStateMixin {
   final _biggerFont = const TextStyle(fontSize: 18.0);
   TabController tabController;
+  final textController = TextEditingController();
   bool isLoading = false;
   List<Term> terms = new List();
+  List<Term> fullTermList = new List();
   Map<String, List<Term>> tags = new Map();
   BuildContext _scaffoldContext;
 
@@ -52,7 +54,10 @@ class TermDictionaryState extends State<TermDictionary>
 
   void loadTerms(TermDatabase db) {
     db.getAllTerms().then((dbTerms) {
-      setState(() => terms = dbTerms);
+      setState(() {
+        terms = dbTerms;
+        fullTermList = dbTerms;
+      });
       db.getTagMap().then((tagMap) {
         setState(() {
           tags = tagMap;
@@ -61,15 +66,32 @@ class TermDictionaryState extends State<TermDictionary>
         });
       });
     });
-
   }
 
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
       appBar: new AppBar(
-        title: new Text('TechTerms'),
-      ),
+          title: new Text('TechTerms'),
+          bottom: tabController.index != 0
+              ? null
+              : new PreferredSize(
+                  preferredSize: const Size.fromHeight(25.0),
+                  child: Container(
+                      margin: EdgeInsets.only(bottom: 5.0),
+                      color: Colors.amber,
+                      alignment: Alignment.center,
+                      child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            new Icon(Icons.search),
+                            new Container(
+                                margin: const EdgeInsets.only(
+                                    left: 10.0, right: 10.0),
+                                width: 300.0,
+                                child: getSearchBar())
+                          ])),
+                )),
       body: new Builder(builder: (BuildContext context) {
         _scaffoldContext = context;
 
@@ -100,18 +122,53 @@ class TermDictionaryState extends State<TermDictionary>
   void switchNotification(TermDatabase db) {
     switch (db.notificationCode) {
       case 0:
-        showMessage(
-            "Could not contact server: using sample terms", Colors.red);
+        showMessage("Could not contact server: using sample terms", Colors.red);
         break;
       case 1:
-        showMessage("Could not contact server: terms may be out-of-date",
-            Colors.red);
+        showMessage(
+            "Could not contact server: terms may be out-of-date", Colors.red);
         break;
       case 2:
         showMessage("Updated terms", Colors.green);
         break;
       default:
     }
+  }
+
+  Widget getSearchBar() {
+    return new Stack(alignment: const Alignment(1.0, 1.0), children: <Widget>[
+      new TextField(
+          controller: textController,
+          decoration: new InputDecoration(hintText: "Search terms..."),
+          onChanged: (a) async {
+            String currentText = textController.text;
+
+            if (currentText == "") {
+              setState(() {
+                terms = fullTermList;
+              });
+            } else {
+              List<Term> results = new List();
+              fullTermList.forEach((Term t) {
+                if (t.name.toLowerCase().contains(currentText.toLowerCase()))
+                  results.add(t);
+              });
+              setState(() {
+                terms = results;
+              });
+            }
+          }),
+      textController.text == ""
+          ? new Container()
+          : new FlatButton(
+              onPressed: () {
+                textController.clear();
+                setState(() {
+                  terms = fullTermList;
+                });
+              },
+              child: new Icon(Icons.clear))
+    ]);
   }
 
   Widget _buildFullTermList() {
