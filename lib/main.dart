@@ -150,8 +150,13 @@ class TermDictionaryState extends State<TermDictionary>
             } else {
               List<Term> results = new List();
               fullTermList.forEach((Term t) {
-                if (t.name.toLowerCase().contains(currentText.toLowerCase()))
-                  results.add(t);
+                if (currentText.length == 1) {
+                  if (t.name
+                      .toLowerCase()
+                      .startsWith(currentText.toLowerCase())) results.add(t);
+                } else if (t.name
+                    .toLowerCase()
+                    .contains(currentText.toLowerCase())) results.add(t);
               });
               setState(() {
                 terms = results;
@@ -253,8 +258,9 @@ class TermDictionaryState extends State<TermDictionary>
           col.children.add(new Related(term: t, onPressed: _tappedTerm));
         }
 
-        var body =
-            new Container(padding: const EdgeInsets.all(32.0), child: col);
+        var body = ListView(children: <Widget>[
+          new Container(padding: const EdgeInsets.all(32.0), child: col)
+        ]);
 
         return new Scaffold(
           appBar: new AppBar(

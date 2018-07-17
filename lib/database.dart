@@ -16,6 +16,7 @@ class TermDatabase {
   final String termTableName = "Terms";
   final String tagTableName = "Tags";
   final String relationTableName = "Related";
+  final int timeoutSecs = 10;
 
   Database db;
   int notificationCode;
@@ -138,10 +139,17 @@ class TermDatabase {
   /// Returns server database version
   Future<int> getServerVersion() async {
     final url = 'https://tech-terms.herokuapp.com/get_version';
-    return await http.get(url).then((response) {
-      if (response.statusCode != 200) return -1;
-      return json.decode(response.body)["version"];
-    });
+    try {
+      return await http
+          .get(url)
+          .timeout(Duration(seconds: timeoutSecs))
+          .then((response) {
+        if (response.statusCode != 200) return -1;
+        return json.decode(response.body)["version"];
+      });
+    } on TimeoutException {
+      return -1;
+    }
   }
 
   /// If [file] not found, returns 0, else returns local DB version from [file]
@@ -213,22 +221,32 @@ class TermDatabase {
   /// with that tag
   Future<Map<String, List<Term>>> getTagMap() async {
     final url = 'https://tech-terms.herokuapp.com/get_tag_names';
-    return await http.get(url).then((response) async {
-      List<String> tagNames;
-      Directory documentsDirectory = await getApplicationDocumentsDirectory();
+    List<String> tagNames;
 
-      if (response.statusCode != 200 || await getLocalVersion() == 0)
+    if (await getLocalVersion() == 0)
+      tagNames = await getTagNamesFromDB();
+    else {
+      try {
+        await http
+            .get(url)
+            .timeout(Duration(seconds: timeoutSecs))
+            .then((response) async {
+          if (response.statusCode != 200 || await getLocalVersion() == 0)
+            tagNames = await getTagNamesFromDB();
+          else
+            tagNames = List<String>.from(json.decode(response.body));
+        });
+      } on TimeoutException {
         tagNames = await getTagNamesFromDB();
-      else
-        tagNames = List<String>.from(json.decode(response.body));
+      }
+    }
 
-      Map<String, List<Term>> tagMap = {};
-      await Future.forEach(tagNames, (String name) async {
-        tagMap[name] = await getTermsForTag(name);
-      });
-
-      return tagMap;
+    Map<String, List<Term>> tagMap = {};
+    await Future.forEach(tagNames, (String name) async {
+      tagMap[name] = await getTermsForTag(name);
     });
+
+    return tagMap;
   }
 
   Future<List<String>> getTagNamesFromDB() async {
@@ -268,47 +286,64 @@ class TermDatabase {
     final tagsURL = 'https://tech-terms.herokuapp.com/get_tags';
     final relatedURL = 'https://tech-terms.herokuapp.com/get_related';
 
-    var terms = await http.get(termURL).then((response) {
-      if (response.statusCode != 200) return null;
+    try {
+      var terms = await http
+          .get(termURL)
+          .timeout(Duration(seconds: timeoutSecs))
+          .then((response) {
+        if (response.statusCode != 200) return null;
 
-      List<Term> termList = [];
-      json.decode(response.body).forEach((termJson) {
-        termList.add(Term.fromJson(termJson));
+        List<Term> termList = [];
+        json.decode(response.body).forEach((termJson) {
+          termList.add(Term.fromJson(termJson));
+        });
+        return termList;
       });
-      return termList;
-    });
 
-    var tags = await http.get(tagsURL).then((response) {
-      if (response.statusCode != 200) return null;
+      var tags = await http
+          .get(tagsURL)
+          .timeout(Duration(seconds: timeoutSecs))
+          .then((response) {
+        if (response.statusCode != 200) return null;
 
-      List<Tag> tagList = [];
-      json.decode(response.body).forEach((tagJson) {
-        tagList.add(Tag.fromJson(tagJson));
+        List<Tag> tagList = [];
+        json.decode(response.body).forEach((tagJson) {
+          tagList.add(Tag.fromJson(tagJson));
+        });
+        return tagList;
       });
-      return tagList;
-    });
 
-    var related = await http.get(relatedURL).then((response) {
-      if (response.statusCode != 200) return null;
+      var related = await http
+          .get(relatedURL)
+          .timeout(Duration(seconds: timeoutSecs))
+          .then((response) {
+        if (response.statusCode != 200) return null;
 
-      List<Relation> relationList = [];
-      json.decode(response.body).forEach((relationJson) {
-        relationList.add(Relation.fromJson(relationJson));
+        List<Relation> relationList = [];
+        json.decode(response.body).forEach((relationJson) {
+          relationList.add(Relation.fromJson(relationJson));
+        });
+        return relationList;
       });
-      return relationList;
-    });
 
-    return {"terms": terms, "tags": tags, "related": related};
+      return {"terms": terms, "tags": tags, "related": related};
+    } on TimeoutException {
+      return null;
+    }
   }
 
   /// Get most recent terms from file and return them in a list
   Future<Map<String, dynamic>> addTermsFromFile() async {
+    print("from file");
+
     String contents = await rootBundle.loadString("assets/sampleData.json");
     List<Term> terms = [];
     List<Tag> tags = [];
     List<Relation> related = [];
     int tagID = 1000;
     int relatedID = 2000;
+
+    print("loaded bundle");
 
     jsonDecode(contents).forEach((termJson) {
       Term term = Term.fromJson(termJson);
