@@ -4,6 +4,7 @@ import 'package:tech_terms/Term.dart';
 import 'package:tech_terms/database.dart';
 import 'package:tech_terms/widget/Abbreviation.dart';
 import 'package:tech_terms/widget/Definition.dart';
+import 'package:tech_terms/widget/InfoButton.dart';
 import 'package:tech_terms/widget/Maker.dart';
 import 'package:tech_terms/widget/Related.dart';
 import 'package:tech_terms/widget/Tags.dart';
@@ -17,7 +18,7 @@ class MyApp extends StatelessWidget {
     return new MaterialApp(
       title: 'TechTerms',
       theme: new ThemeData(
-        primaryColor: Colors.amber,
+        primaryColor: Colors.indigo,
       ),
       home: new TermDictionary(),
     );
@@ -39,11 +40,15 @@ class TermDictionaryState extends State<TermDictionary>
   List<Term> fullTermList = new List();
   Map<String, List<Term>> tags = new Map();
   BuildContext _scaffoldContext;
+  PreferredSize bottom;
+  PreferredSize searchBar;
+  Color defaultColor = Colors.indigo;
 
   @override
   void initState() {
     super.initState();
     tabController = new TabController(length: 2, vsync: this);
+    tabController.addListener(updateBottom);
     setState(() => isLoading = true);
     var db = TermDatabase.get();
 
@@ -57,6 +62,8 @@ class TermDictionaryState extends State<TermDictionary>
       setState(() {
         terms = dbTerms;
         fullTermList = dbTerms;
+        searchBar = getAppBarBottom();
+        bottom = updateBottom();
       });
       db.getTagMap().then((tagMap) {
         setState(() {
@@ -72,26 +79,11 @@ class TermDictionaryState extends State<TermDictionary>
   Widget build(BuildContext context) {
     return new Scaffold(
       appBar: new AppBar(
-          title: new Text('TechTerms'),
-          bottom: tabController.index != 0
-              ? null
-              : new PreferredSize(
-                  preferredSize: const Size.fromHeight(25.0),
-                  child: Container(
-                      margin: EdgeInsets.only(bottom: 5.0),
-                      color: Colors.amber,
-                      alignment: Alignment.center,
-                      child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            new Icon(Icons.search),
-                            new Container(
-                                margin: const EdgeInsets.only(
-                                    left: 10.0, right: 10.0),
-                                width: 300.0,
-                                child: getSearchBar())
-                          ])),
-                )),
+          title: tabController.index == 0
+              ? new Text('TechTerms')
+              : new Text('Tags'),
+          actions: <Widget>[new InfoButton(context: context)],
+          bottom: bottom),
       body: new Builder(builder: (BuildContext context) {
         _scaffoldContext = context;
 
@@ -105,8 +97,9 @@ class TermDictionaryState extends State<TermDictionary>
       bottomNavigationBar: new Hero(
           tag: "bottom",
           child: new Material(
-              color: Colors.amber,
+              color: defaultColor,
               child: new TabBar(
+                  indicatorColor: Colors.indigo[100],
                   controller: tabController,
                   tabs: <Widget>[new Tab0(), new Tab1()]))),
     );
@@ -135,9 +128,38 @@ class TermDictionaryState extends State<TermDictionary>
     }
   }
 
+  Widget updateBottom() {
+    setState(() {
+      if (tabController.index == 0) {
+        bottom = searchBar;
+      } else
+        bottom = null;
+    });
+    return bottom;
+  }
+
+  Widget getAppBarBottom() {
+    return new PreferredSize(
+      preferredSize: const Size.fromHeight(25.0),
+      child: Container(
+          color: Colors.indigo[100],
+          alignment: Alignment.center,
+          child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                new Icon(Icons.search),
+                new Container(
+                    margin: const EdgeInsets.only(left: 10.0, right: 10.0),
+                    width: 300.0,
+                    child: getSearchBar())
+              ])),
+    );
+  }
+
   Widget getSearchBar() {
     return new Stack(alignment: const Alignment(1.0, 1.0), children: <Widget>[
       new TextField(
+          autocorrect: false,
           controller: textController,
           decoration: new InputDecoration(hintText: "Search terms..."),
           onChanged: (a) async {
@@ -150,13 +172,13 @@ class TermDictionaryState extends State<TermDictionary>
             } else {
               List<Term> results = new List();
               fullTermList.forEach((Term t) {
-                if (currentText.length == 1) {
-                  if (t.name
-                      .toLowerCase()
-                      .startsWith(currentText.toLowerCase())) results.add(t);
-                } else if (t.name
-                    .toLowerCase()
-                    .contains(currentText.toLowerCase())) results.add(t);
+                if (t.name.toLowerCase().startsWith(currentText.toLowerCase()))
+                  results.add(t);
+              });
+              fullTermList.forEach((Term t) {
+                if (t.name.toLowerCase().contains(
+                    currentText.toLowerCase())) if (!results.contains(t))
+                  results.add(t);
               });
               setState(() {
                 terms = results;
@@ -265,6 +287,7 @@ class TermDictionaryState extends State<TermDictionary>
         return new Scaffold(
           appBar: new AppBar(
             title: new Text(t.name),
+            actions: <Widget>[new InfoButton(context: context)],
           ),
           body: body,
           bottomNavigationBar: _getSubviewBottomBar(),
@@ -277,11 +300,11 @@ class TermDictionaryState extends State<TermDictionary>
     return new Hero(
         tag: "bottom",
         child: new Material(
-            color: Colors.amber,
+            color: defaultColor,
             child: new TabBar(controller: tabController, tabs: <Widget>[
               new GestureDetector(
                   child: new Container(
-                      color: Colors.amber,
+                      color: defaultColor,
                       width: double.infinity,
                       child: new Tab0()),
                   onTap: () {
@@ -294,7 +317,7 @@ class TermDictionaryState extends State<TermDictionary>
                   }),
               new GestureDetector(
                   child: new Container(
-                      color: Colors.amber,
+                      color: defaultColor,
                       width: double.infinity,
                       child: new Tab1()),
                   onTap: () {
@@ -333,6 +356,6 @@ class Tab0 extends StatelessWidget {
 class Tab1 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return new Tab(icon: new Icon(Icons.menu));
+    return new Tab(icon: new Icon(Icons.collections_bookmark));
   }
 }
