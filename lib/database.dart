@@ -16,7 +16,7 @@ class TermDatabase {
   final String termTableName = "Terms";
   final String tagTableName = "Tags";
   final String relationTableName = "Related";
-  final int timeoutSecs = 10;
+  final int timeoutSecs = 13;
 
   Database db;
   int notificationCode;
