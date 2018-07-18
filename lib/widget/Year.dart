@@ -25,6 +25,7 @@ class Year extends StatelessWidget {
             new Text(
               term.year.toString(),
               style: new TextStyle(
+                fontSize: 18.0,
                 color: Colors.grey[500],
               ),
             ),

@@ -334,7 +334,6 @@ class TermDatabase {
 
   /// Get most recent terms from file and return them in a list
   Future<Map<String, dynamic>> addTermsFromFile() async {
-    print("from file");
 
     String contents = await rootBundle.loadString("assets/sampleData.json");
     List<Term> terms = [];
@@ -342,8 +341,6 @@ class TermDatabase {
     List<Relation> related = [];
     int tagID = 1000;
     int relatedID = 2000;
-
-    print("loaded bundle");
 
     jsonDecode(contents).forEach((termJson) {
       Term term = Term.fromJson(termJson);

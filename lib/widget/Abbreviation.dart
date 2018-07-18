@@ -25,6 +25,7 @@ class Abbreviation extends StatelessWidget {
             new Text(
               term.abbreviation,
               style: new TextStyle(
+                fontSize: 18.0,
                 color: Colors.grey[500],
               ),
             ),

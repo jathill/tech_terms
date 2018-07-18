@@ -38,7 +38,7 @@ class Related extends StatelessWidget {
         onPressed: () => onPressed(relatedTerm),
         borderSide: new BorderSide(color: Colors.lightBlue),
         textColor: Colors.blueGrey,
-        child: new Text(relatedTerm.name),
+        child: new Text(relatedTerm.name, style: new TextStyle(fontSize: 16.0),),
       );
       buttons.add(button);
     });

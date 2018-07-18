@@ -35,7 +35,7 @@ class Tags extends StatelessWidget {
         onPressed: () => onPressed(name),
         borderSide: new BorderSide(color: Colors.lightBlue),
         textColor: Colors.blueGrey,
-        child: new Text(name),
+        child: new Text(name, style: new TextStyle(fontSize: 16.0),),
       );
       buttons.add(button);
     });

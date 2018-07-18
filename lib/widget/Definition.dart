@@ -25,6 +25,7 @@ class Definition extends StatelessWidget {
       defContent = new Text(
         term.definition,
         style: new TextStyle(
+          fontSize: 18.0,
           color: Colors.grey[500],
         ),
       );

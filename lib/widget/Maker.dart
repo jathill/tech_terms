@@ -25,6 +25,7 @@ class Maker extends StatelessWidget {
             new Text(
               term.maker,
               style: new TextStyle(
+                fontSize: 18.0,
                 color: Colors.grey[500],
               ),
             ),

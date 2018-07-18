@@ -10,6 +10,8 @@ import 'package:tech_terms/widget/Related.dart';
 import 'package:tech_terms/widget/Tags.dart';
 import 'package:tech_terms/widget/Year.dart';
 
+typedef void ArgFunction(a, b);
+
 void main() => runApp(new MyApp());
 
 class MyApp extends StatelessWidget {
@@ -33,15 +35,18 @@ class TermDictionary extends StatefulWidget {
 class TermDictionaryState extends State<TermDictionary>
     with SingleTickerProviderStateMixin {
   final _biggerFont = const TextStyle(fontSize: 18.0);
-  TabController tabController;
   final textController = TextEditingController();
+
+  TabController tabController;
   bool isLoading = false;
   List<Term> terms = new List();
   List<Term> fullTermList = new List();
   Map<String, List<Term>> tags = new Map();
   BuildContext _scaffoldContext;
   PreferredSize bottom;
-  PreferredSize searchBar;
+  PreferredSize searchBottom;
+  Widget searchClear = Container();
+
   Color defaultColor = Colors.indigo;
 
   @override
@@ -60,9 +65,11 @@ class TermDictionaryState extends State<TermDictionary>
   void loadTerms(TermDatabase db) {
     db.getAllTerms().then((dbTerms) {
       setState(() {
-        terms = dbTerms;
+        if (textController.text == "")
+          terms = dbTerms;
+        else
+          terms = search(textController.text);
         fullTermList = dbTerms;
-        searchBar = getAppBarBottom();
         bottom = updateBottom();
       });
       db.getTagMap().then((tagMap) {
@@ -83,7 +90,16 @@ class TermDictionaryState extends State<TermDictionary>
               ? new Text('TechTerms')
               : new Text('Tags'),
           actions: <Widget>[new InfoButton(context: context)],
-          bottom: bottom),
+          bottom: tabController.index != 0
+              ? null
+              : PreferredSize(
+                  preferredSize: const Size.fromHeight(25.0),
+                  child: SearchBottom(
+                      tabController: tabController,
+                      textController: textController,
+                      onChanged: handleSearchBottom,
+                      searchClear: searchClear),
+                )),
       body: new Builder(builder: (BuildContext context) {
         _scaffoldContext = context;
 
@@ -103,6 +119,23 @@ class TermDictionaryState extends State<TermDictionary>
                   controller: tabController,
                   tabs: <Widget>[new Tab0(), new Tab1()]))),
     );
+  }
+
+  void handleSearchBottom() {
+    String currentText = textController.text;
+
+    if (currentText == "") {
+      setState(() {
+        terms = fullTermList;
+        searchClear = Container();
+      });
+    } else {
+      List<Term> results = search(currentText);
+      setState(() {
+        terms = results;
+        searchClear = getClearButton();
+      });
+    }
   }
 
   void showMessage(String msg, Color c) {
@@ -131,71 +164,34 @@ class TermDictionaryState extends State<TermDictionary>
   Widget updateBottom() {
     setState(() {
       if (tabController.index == 0) {
-        bottom = searchBar;
+        bottom = searchBottom;
       } else
         bottom = null;
     });
     return bottom;
   }
 
-  Widget getAppBarBottom() {
-    return new PreferredSize(
-      preferredSize: const Size.fromHeight(25.0),
-      child: Container(
-          color: Colors.indigo[100],
-          alignment: Alignment.center,
-          child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                new Icon(Icons.search),
-                new Container(
-                    margin: const EdgeInsets.only(left: 10.0, right: 10.0),
-                    width: 300.0,
-                    child: getSearchBar())
-              ])),
-    );
+  List<Term> search(currentText) {
+    List<Term> results = new List();
+    fullTermList.forEach((Term t) {
+      if (t.name.toLowerCase().startsWith(currentText.toLowerCase()))
+        results.add(t);
+    });
+    fullTermList.forEach((Term t) {
+      if (t.name.toLowerCase().contains(currentText.toLowerCase())) if (!results
+          .contains(t)) results.add(t);
+    });
+
+    return results;
   }
 
-  Widget getSearchBar() {
-    return new Stack(alignment: const Alignment(1.0, 1.0), children: <Widget>[
-      new TextField(
-          autocorrect: false,
-          controller: textController,
-          decoration: new InputDecoration(hintText: "Search terms..."),
-          onChanged: (a) async {
-            String currentText = textController.text;
-
-            if (currentText == "") {
-              setState(() {
-                terms = fullTermList;
-              });
-            } else {
-              List<Term> results = new List();
-              fullTermList.forEach((Term t) {
-                if (t.name.toLowerCase().startsWith(currentText.toLowerCase()))
-                  results.add(t);
-              });
-              fullTermList.forEach((Term t) {
-                if (t.name.toLowerCase().contains(
-                    currentText.toLowerCase())) if (!results.contains(t))
-                  results.add(t);
-              });
-              setState(() {
-                terms = results;
-              });
-            }
-          }),
-      textController.text == ""
-          ? new Container()
-          : new FlatButton(
-              onPressed: () {
-                textController.clear();
-                setState(() {
-                  terms = fullTermList;
-                });
-              },
-              child: new Icon(Icons.clear))
-    ]);
+  Widget getClearButton() {
+    return new FlatButton(
+        onPressed: () {
+          textController.clear();
+          handleSearchBottom();
+        },
+        child: new Icon(Icons.clear));
   }
 
   Widget _buildFullTermList() {
@@ -261,8 +257,8 @@ class TermDictionaryState extends State<TermDictionary>
           col.children.add(new Abbreviation(term: t));
         }
 
-        col.children.add(
-            new Definition(term: t, termList: terms, onPressed: _tappedTerm));
+        col.children.add(new Definition(
+            term: t, termList: fullTermList, onPressed: _tappedTerm));
 
         if (t.maker != null) {
           col.children.add(new Maker(term: t));
@@ -301,34 +297,37 @@ class TermDictionaryState extends State<TermDictionary>
         tag: "bottom",
         child: new Material(
             color: defaultColor,
-            child: new TabBar(controller: tabController, tabs: <Widget>[
-              new GestureDetector(
-                  child: new Container(
-                      color: defaultColor,
-                      width: double.infinity,
-                      child: new Tab0()),
-                  onTap: () {
-                    while (Navigator.of(context).canPop()) {
-                      Navigator.of(context).pop();
-                    }
-                    setState(() {
-                      if (tabController.index == 1) tabController.index = 0;
-                    });
-                  }),
-              new GestureDetector(
-                  child: new Container(
-                      color: defaultColor,
-                      width: double.infinity,
-                      child: new Tab1()),
-                  onTap: () {
-                    while (Navigator.of(context).canPop()) {
-                      Navigator.of(context).pop();
-                    }
-                    setState(() {
-                      if (tabController.index == 0) tabController.index = 1;
-                    });
-                  })
-            ])));
+            child: new TabBar(
+                indicatorColor: Colors.indigo[100],
+                controller: tabController,
+                tabs: <Widget>[
+                  new GestureDetector(
+                      child: new Container(
+                          color: defaultColor,
+                          width: double.infinity,
+                          child: new Tab0()),
+                      onTap: () {
+                        while (Navigator.of(context).canPop()) {
+                          Navigator.of(context).pop();
+                        }
+                        setState(() {
+                          if (tabController.index == 1) tabController.index = 0;
+                        });
+                      }),
+                  new GestureDetector(
+                      child: new Container(
+                          color: defaultColor,
+                          width: double.infinity,
+                          child: new Tab1()),
+                      onTap: () {
+                        while (Navigator.of(context).canPop()) {
+                          Navigator.of(context).pop();
+                        }
+                        setState(() {
+                          if (tabController.index == 0) tabController.index = 1;
+                        });
+                      })
+                ])));
   }
 
   void _tappedTag(String tagName) {
@@ -343,6 +342,46 @@ class TermDictionaryState extends State<TermDictionary>
         );
       }),
     );
+  }
+}
+
+class SearchBottom extends StatelessWidget {
+  SearchBottom(
+      {@required this.tabController,
+      @required this.textController,
+      @required this.onChanged,
+      @required this.searchClear});
+
+  final TabController tabController;
+  final TextEditingController textController;
+  final Function onChanged;
+  final Widget searchClear;
+
+  Widget build(BuildContext context) {
+    return new Container(
+        color: Colors.indigo[100],
+        alignment: Alignment.center,
+        child:
+            Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
+          new Icon(Icons.search),
+          new Container(
+              margin: const EdgeInsets.only(left: 10.0, right: 10.0),
+              width: 300.0,
+              child: getSearchBar())
+        ]));
+  }
+
+  Widget getSearchBar() {
+    return new Stack(alignment: const Alignment(1.0, 1.0), children: <Widget>[
+      new TextField(
+          autocorrect: false,
+          controller: textController,
+          decoration: new InputDecoration(hintText: "Search terms..."),
+          onChanged: (context) async {
+            onChanged();
+          }),
+      searchClear
+    ]);
   }
 }
 
