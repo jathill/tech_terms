@@ -99,6 +99,6 @@ class Term extends Comparable {
 
   @override
   int compareTo(other) {
-    return this.name.compareTo(other.name);
+    return this.name.toLowerCase().compareTo(other.name.toLowerCase());
   }
 }

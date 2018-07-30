@@ -23,7 +23,8 @@ class Tags extends StatelessWidget {
                 ),
               ),
             ),
-            new Wrap(spacing: 8.0, children: buildTagButtons(term))
+            new Wrap(
+                spacing: 8.0, runSpacing: 4.0, children: buildTagButtons(term))
           ],
         ));
   }
@@ -35,7 +36,10 @@ class Tags extends StatelessWidget {
         onPressed: () => onPressed(name),
         borderSide: new BorderSide(color: Colors.lightBlue),
         textColor: Colors.blueGrey,
-        child: new Text(name, style: new TextStyle(fontSize: 16.0),),
+        child: new Text(
+          name,
+          style: new TextStyle(fontSize: 16.0),
+        ),
       );
       buttons.add(button);
     });
