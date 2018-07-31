@@ -58,9 +58,11 @@ class Term extends Comparable {
   static const db_abbreviation = "Abbreviation";
   static const db_tags = "Tags";
   static const db_related = "Related";
+  static const db_starred = "Starred";
 
   String name, id, definition, maker, abbreviates, abbreviation;
   int year;
+  bool starred;
   List<String> tags;
   List<Term> related;
 
@@ -70,6 +72,7 @@ class Term extends Comparable {
       @required this.id,
       this.maker,
       this.year,
+      this.starred,
       this.tags,
       this.related,
       this.abbreviates,
@@ -93,6 +96,7 @@ class Term extends Comparable {
           id: map[db_id].toString(),
           maker: map[db_maker],
           year: map[db_year],
+          starred: map[db_starred] == 1,
           abbreviates: map[db_abbreviates],
           abbreviation: map[db_abbreviation],
         );

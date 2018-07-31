@@ -52,9 +52,10 @@ class TermDatabase {
   }
 
   Future checkVersion() async {
-    final int serverVersion = await getServerVersion();
+    int serverVersion = await getServerVersion();
     final int localVersion = await getLocalVersion();
     print("Server version $serverVersion; Local version $localVersion");
+
 
     // Checks if local database version is up-to-date, and downloads updated
     // terms if necessary
@@ -90,6 +91,7 @@ class TermDatabase {
         "${Term.db_definition} TEXT NOT NULL,"
         "${Term.db_maker} TEXT,"
         "${Term.db_year} INTEGER,"
+        "${Term.db_starred} INTEGER NOT NULL DEFAULT 0,"
         "${Term.db_abbreviates} TEXT,"
         "${Term.db_abbreviation} TEXT"
         ")");
@@ -123,9 +125,8 @@ class TermDatabase {
 
       await db.rawDelete("DELETE FROM $tagTableName");
       await db.rawDelete("DELETE FROM $relationTableName");
-      await db.rawDelete("DELETE FROM $termTableName");
 
-      termList.forEach((t) => updateTerm(t));
+      await Future.forEach(termList, (t) => updateTerm(t));
       tagList.forEach((t) => updateTag(t));
       relationList.forEach((r) => updateRelation(r));
     });
@@ -213,6 +214,7 @@ class TermDatabase {
       dbTerms.add(new Term.fromMap(item));
     }
 
+    dbTerms.sort();
     _cachedTerms = dbTerms;
     return dbTerms;
   }
@@ -334,7 +336,6 @@ class TermDatabase {
 
   /// Get most recent terms from file and return them in a list
   Future<Map<String, dynamic>> addTermsFromFile() async {
-
     String contents = await rootBundle.loadString("assets/sampleData.json");
     List<Term> terms = [];
     List<Tag> tags = [];
@@ -363,26 +364,56 @@ class TermDatabase {
       relatedID++;
     });
 
-    terms.sort();
-
     return {"terms": terms, "tags": tags, "related": related};
   }
 
   /// Inserts or replaces [term] in local database
   Future updateTerm(Term term) async {
-    await db.rawInsert(
-        'INSERT OR REPLACE INTO '
-        '$termTableName(${Term.db_id}, ${Term.db_name}, ${Term.db_definition}, ${Term.db_maker}, ${Term.db_year}, ${Term.db_abbreviates}, ${Term.db_abbreviation})'
-        ' VALUES(?, ?, ?, ?, ?, ?, ?)',
-        [
-          term.id,
-          term.name,
-          term.definition,
-          term.maker,
-          term.year,
-          term.abbreviates,
-          term.abbreviation
-        ]);
+    List attrs = [
+      term.id,
+      term.name,
+      term.definition,
+      term.maker,
+      term.year,
+      term.abbreviates,
+      term.abbreviation
+    ];
+
+    var count = await db.rawUpdate(
+        'UPDATE $termTableName SET '
+        '${Term.db_name} = ?,'
+        '${Term.db_definition}  = ?,'
+        '${Term.db_maker} = ?,'
+        '${Term.db_year} = ?,'
+        '${Term.db_abbreviates} = ?,'
+        '${Term.db_abbreviation} = ? '
+        ' WHERE ${Term.db_id} = ${term.id}',
+        attrs.sublist(1));
+    if (count == 0) {
+      //print("inserting ${term.name}");
+      await db.rawInsert(
+          'INSERT INTO '
+          '$termTableName(${Term.db_id}, ${Term.db_name}, ${Term
+              .db_definition}, ${Term.db_maker}, ${Term.db_year}, ${Term
+              .db_abbreviates}, ${Term.db_abbreviation})'
+          ' VALUES(?, ?, ?, ?, ?, ?, ?)',
+          attrs);
+    }
+  }
+
+  Future updateStarred(Term term) async {
+    term.starred = !term.starred;
+    int starred = term.starred ? 1 : 0;
+    String query = 'UPDATE $termTableName SET ${Term.db_starred} = $starred '
+        ' WHERE ${Term.db_id} = ${term.id}';
+
+    try {
+      await db.rawUpdate(query, [term.id, starred]);
+    } catch (DatabaseException) {
+      await db.rawQuery('ALTER TABLE $termTableName ADD ${Term.db_starred} '
+          'INTEGER NOT NULL DEFAULT 0');
+      await db.rawUpdate(query, [term.id, starred]);
+    }
   }
 
   /// Inserts or replaces [tag] in local database

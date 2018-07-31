@@ -52,7 +52,7 @@ class TermDictionaryState extends State<TermDictionary>
   @override
   void initState() {
     super.initState();
-    tabController = new TabController(length: 2, vsync: this);
+    tabController = new TabController(length: 3, vsync: this);
     tabController.addListener(updateBottom);
     setState(() => isLoading = true);
     var db = TermDatabase.get();
@@ -88,7 +88,7 @@ class TermDictionaryState extends State<TermDictionary>
       appBar: new AppBar(
           title: tabController.index == 0
               ? new Text('TechTerms')
-              : new Text('Tags'),
+              : tabController.index == 1 ? new Text('Tags') : new Text('Saved'),
           actions: <Widget>[new InfoButton(context: context)],
           bottom: tabController.index != 0
               ? null
@@ -106,7 +106,11 @@ class TermDictionaryState extends State<TermDictionary>
         return isLoading
             ? new Center(child: new CircularProgressIndicator())
             : new TabBarView(
-                children: <Widget>[_buildFullTermList(), _buildTagList()],
+                children: <Widget>[
+                  _buildFullTermList(),
+                  _buildTagList(),
+                  _buildSavedTermList()
+                ],
                 controller: tabController,
               );
       }),
@@ -117,7 +121,7 @@ class TermDictionaryState extends State<TermDictionary>
               child: new TabBar(
                   indicatorColor: Colors.indigo[100],
                   controller: tabController,
-                  tabs: <Widget>[new Tab0(), new Tab1()]))),
+                  tabs: <Widget>[new Tab0(), new Tab1(), new Tab2()]))),
     );
   }
 
@@ -198,6 +202,11 @@ class TermDictionaryState extends State<TermDictionary>
     return _buildTermList(terms);
   }
 
+  Widget _buildSavedTermList() {
+    List<Term> starred = List<Term>.from(fullTermList.where((t) => t.starred));
+    return _buildTermList(starred);
+  }
+
   Widget _buildTermList(termList) {
     return new RefreshIndicator(
         child: new ListView.builder(
@@ -218,6 +227,14 @@ class TermDictionaryState extends State<TermDictionary>
         t.name,
         style: _biggerFont,
       ),
+      trailing: new GestureDetector(
+          child: Icon(t.starred ? Icons.star : Icons.star_border,
+              color: t.starred ? Colors.yellow[600] : null),
+          onTap: () {
+            setState(() {
+              TermDatabase.get().updateStarred(t);
+            });
+          }),
       onTap: () => _tappedTerm(t),
     );
   }
@@ -311,7 +328,7 @@ class TermDictionaryState extends State<TermDictionary>
                           Navigator.of(context).pop();
                         }
                         setState(() {
-                          if (tabController.index == 1) tabController.index = 0;
+                          if (tabController.index != 0) tabController.index = 0;
                         });
                       }),
                   new GestureDetector(
@@ -324,7 +341,20 @@ class TermDictionaryState extends State<TermDictionary>
                           Navigator.of(context).pop();
                         }
                         setState(() {
-                          if (tabController.index == 0) tabController.index = 1;
+                          if (tabController.index != 1) tabController.index = 1;
+                        });
+                      }),
+                  new GestureDetector(
+                      child: new Container(
+                          color: defaultColor,
+                          width: double.infinity,
+                          child: new Tab2()),
+                      onTap: () {
+                        while (Navigator.of(context).canPop()) {
+                          Navigator.of(context).pop();
+                        }
+                        setState(() {
+                          if (tabController.index != 2) tabController.index = 2;
                         });
                       })
                 ])));
@@ -396,5 +426,12 @@ class Tab1 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return new Tab(icon: new Icon(Icons.collections_bookmark));
+  }
+}
+
+class Tab2 extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return new Tab(icon: new Icon(Icons.star));
   }
 }
