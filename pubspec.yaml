@@ -13,6 +13,9 @@ dependencies:
   http: "^0.11.3+16"
   url_launcher: ^3.0.3
   connectivity: ^0.3.1
+  mailer:
+    git:
+      url: git://github.com/jathill/mailer.git
 
 
 dev_dependencies:
@@ -34,6 +37,7 @@ flutter:
 
   assets:
     - assets/sampleData.json
+    - assets/rand.txt
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.io/assets-and-images/#resolution-aware.

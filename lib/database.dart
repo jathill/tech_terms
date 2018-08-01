@@ -97,7 +97,7 @@ class TermDatabase {
         "${Term.db_definition} TEXT NOT NULL,"
         "${Term.db_maker} TEXT,"
         "${Term.db_year} INTEGER,"
-        "${Term.db_starred} INTEGER NOT NULL DEFAULT 0,"
+        //"${Term.db_starred} INTEGER NOT NULL DEFAULT 0,"
         "${Term.db_abbreviates} TEXT,"
         "${Term.db_abbreviation} TEXT"
         ")");
@@ -419,11 +419,11 @@ class TermDatabase {
         ' WHERE ${Term.db_id} = ${term.id}';
 
     try {
-      await db.rawUpdate(query, [term.id, starred]);
+      await db.rawUpdate(query);
     } catch (DatabaseException) {
       await db.rawQuery('ALTER TABLE $termTableName ADD ${Term.db_starred} '
           'INTEGER NOT NULL DEFAULT 0');
-      await db.rawUpdate(query, [term.id, starred]);
+      await db.rawUpdate(query);
     }
   }
 
