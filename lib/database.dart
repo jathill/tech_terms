@@ -5,8 +5,9 @@ import 'package:flutter/services.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:tech_terms/Term.dart';
+import 'package:connectivity/connectivity.dart';
 import 'package:http/http.dart' as http;
+import 'package:tech_terms/Term.dart';
 
 typedef Future FutureFunction();
 
@@ -56,7 +57,6 @@ class TermDatabase {
     final int localVersion = await getLocalVersion();
     print("Server version $serverVersion; Local version $localVersion");
 
-
     // Checks if local database version is up-to-date, and downloads updated
     // terms if necessary
     if (serverVersion == -1) {
@@ -81,6 +81,12 @@ class TermDatabase {
       _cachedTerms = null;
       setTags(await getAllTerms()).then((context) => setRelated(_cachedTerms));
     }
+  }
+
+  Future<bool> isConnected() async {
+    var result = await (new Connectivity().checkConnectivity());
+    return result == ConnectivityResult.mobile ||
+        result == ConnectivityResult.wifi;
   }
 
   /// Creates tables for [db] and returns it
@@ -139,6 +145,8 @@ class TermDatabase {
 
   /// Returns server database version
   Future<int> getServerVersion() async {
+    if (!await isConnected()) return -1;
+
     final url = 'https://tech-terms.herokuapp.com/get_version';
     try {
       return await http
@@ -227,6 +235,8 @@ class TermDatabase {
 
     if (await getLocalVersion() == 0)
       tagNames = await getTagNamesFromDB();
+    else if (!await isConnected())
+      tagNames = await getTagNamesFromDB();
     else {
       try {
         await http
@@ -284,6 +294,8 @@ class TermDatabase {
 
   /// Gets terms, tags, and relations from server, returns them in a map
   Future<Map<String, dynamic>> addTermsFromServer() async {
+    if (!await isConnected()) return null;
+
     final termURL = 'https://tech-terms.herokuapp.com/get_terms';
     final tagsURL = 'https://tech-terms.herokuapp.com/get_tags';
     final relatedURL = 'https://tech-terms.herokuapp.com/get_related';
@@ -390,7 +402,6 @@ class TermDatabase {
         ' WHERE ${Term.db_id} = ${term.id}',
         attrs.sublist(1));
     if (count == 0) {
-      //print("inserting ${term.name}");
       await db.rawInsert(
           'INSERT INTO '
           '$termTableName(${Term.db_id}, ${Term.db_name}, ${Term
