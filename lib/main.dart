@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:draggable_scrollbar/draggable_scrollbar.dart';
 import 'package:tech_terms/Term.dart';
 import 'package:tech_terms/database.dart';
 import 'package:tech_terms/widget/Abbreviation.dart';
@@ -208,16 +209,21 @@ class TermDictionaryState extends State<TermDictionary>
   }
 
   Widget _buildTermList(termList) {
+    ScrollController scrollController = ScrollController();
     return new RefreshIndicator(
-        child: new ListView.builder(
-            padding: const EdgeInsets.all(16.0),
-            itemCount: termList.length * 2,
-            itemBuilder: (context, i) {
-              // Add a one-pixel-high divider widget before each row in theListView.
-              if (i.isOdd) return new Divider();
-              final index = i ~/ 2;
-              return _buildTermRow(termList[index]);
-            }),
+        child: DraggableScrollbar.arrows(
+            backgroundColor: Colors.indigo[100],
+            controller: scrollController,
+            child: new ListView.builder(
+                controller: scrollController,
+                padding: const EdgeInsets.all(16.0),
+                itemCount: termList.length * 2,
+                itemBuilder: (context, i) {
+                  // Add a one-pixel-high divider widget before each row in theListView.
+                  if (i.isOdd) return new Divider();
+                  final index = i ~/ 2;
+                  return _buildTermRow(termList[index]);
+                })),
         onRefresh: _handleRefresh);
   }
 
@@ -227,10 +233,10 @@ class TermDictionaryState extends State<TermDictionary>
         t.name,
         style: _biggerFont,
       ),
-      trailing: new GestureDetector(
-          child: Icon(t.starred ? Icons.star : Icons.star_border,
+      trailing: new IconButton(
+          icon: Icon(t.starred ? Icons.star : Icons.star_border,
               color: t.starred ? Colors.yellow[600] : null),
-          onTap: () {
+          onPressed: () {
             setState(() {
               TermDatabase.get().updateStarred(t);
             });
@@ -264,8 +270,14 @@ class TermDictionaryState extends State<TermDictionary>
     await db.refresh().then((context) => loadTerms(db));
   }
 
+  void _toggleStarred(Term t) {
+    setState(() {
+      TermDatabase.get().updateStarred(t);
+    });
+  }
+
   void _tappedTerm(Term t) {
-    Navigator.of(context).push(
+    Navigator.of(_scaffoldContext).push(
       new MaterialPageRoute(builder: (context) {
         var col = new Column(
             crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[]);
@@ -298,10 +310,9 @@ class TermDictionaryState extends State<TermDictionary>
         ]);
 
         return new Scaffold(
-          appBar: new AppBar(
-            title: new Text(t.name),
-            actions: <Widget>[new InfoButton(context: context)],
-          ),
+          appBar: PreferredSize(
+              child: TermAppBar(term: t, onChanged: _toggleStarred),
+              preferredSize: Size.fromHeight(kToolbarHeight)),
           body: body,
           bottomNavigationBar: _getSubviewBottomBar(),
         );
@@ -433,5 +444,42 @@ class Tab2 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return new Tab(icon: new Icon(Icons.star));
+  }
+}
+
+class TermAppBar extends StatefulWidget {
+  TermAppBar({@required this.term, @required this.onChanged});
+
+  final Term term;
+  final ValueChanged<Term> onChanged;
+
+  @override
+  _TermAppBarState createState() => _TermAppBarState();
+}
+
+class _TermAppBarState extends State<TermAppBar> {
+  bool starred;
+
+  void _handleChanged() {
+    setState(() {
+      starred = !starred;
+    });
+    widget.onChanged(widget.term);
+  }
+
+  Widget build(BuildContext context) {
+    starred = widget.term.starred;
+    return new AppBar(
+      title: FittedBox(
+        child: new Text(widget.term.name),
+        fit: BoxFit.scaleDown,
+      ),
+      actions: <Widget>[
+        new IconButton(
+            icon: new Icon(starred ? Icons.star : Icons.star_border,
+                color: starred ? Colors.yellow[600] : null),
+            onPressed: _handleChanged)
+      ],
+    );
   }
 }

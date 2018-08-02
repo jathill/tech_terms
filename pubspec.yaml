@@ -13,6 +13,7 @@ dependencies:
   http: "^0.11.3+16"
   url_launcher: ^3.0.3
   connectivity: ^0.3.1
+  draggable_scrollbar: ^0.0.3
   mailer:
     git:
       url: git://github.com/jathill/mailer.git
