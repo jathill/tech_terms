@@ -6,9 +6,11 @@ import 'dart:async';
 import 'package:tech_terms/database.dart';
 
 class InfoButton extends StatelessWidget {
-  const InfoButton({@required this.context});
+  const InfoButton({@required this.context, @required this.onSendAttempt});
 
   final BuildContext context;
+  final Function onSendAttempt;
+
   @override
   Widget build(BuildContext context) {
     return new IconButton(
@@ -41,10 +43,12 @@ class InfoButton extends StatelessWidget {
             new FlatButton(
                 onPressed: _launchURL,
                 child: new Text("Website",
+                    textAlign: TextAlign.center,
                     style: new TextStyle(color: Colors.blue, fontSize: 17.0))),
             new FlatButton(
                 onPressed: _openTextField,
                 child: new Text("Feedback / Make a suggestion",
+                    textAlign: TextAlign.center,
                     style: new TextStyle(color: Colors.blue, fontSize: 17.0))),
             new Text(
               "\nData Version: $version",
@@ -89,7 +93,14 @@ class InfoButton extends StatelessWidget {
                     var db = TermDatabase.get();
                     bool success = await _sendEmail(controller.text);
 
-                    if (success) Navigator.of(context).pop();
+                    if (success) {
+                      db.notificationCode = 3;
+                    } else {
+                      db.notificationCode = 4;
+                    }
+                    Navigator.of(context).pop();
+                    Navigator.of(context).pop();
+                    onSendAttempt(db);
                   },
                 ),
                 new FlatButton(

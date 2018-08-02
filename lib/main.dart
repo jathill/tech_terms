@@ -89,8 +89,12 @@ class TermDictionaryState extends State<TermDictionary>
       appBar: new AppBar(
           title: tabController.index == 0
               ? new Text('TechTerms')
-              : tabController.index == 1 ? new Text('Tags') : new Text('Saved'),
-          actions: <Widget>[new InfoButton(context: context)],
+              : tabController.index == 1
+                  ? new Text('Tags')
+                  : new Text('Starred'),
+          actions: <Widget>[
+            new InfoButton(context: context, onSendAttempt: switchNotification)
+          ],
           bottom: tabController.index != 0
               ? null
               : PreferredSize(
@@ -110,7 +114,7 @@ class TermDictionaryState extends State<TermDictionary>
                 children: <Widget>[
                   _buildFullTermList(),
                   _buildTagList(),
-                  _buildSavedTermList()
+                  _buildStarredTermList()
                 ],
                 controller: tabController,
               );
@@ -162,6 +166,12 @@ class TermDictionaryState extends State<TermDictionary>
       case 2:
         showMessage("Updated terms", Colors.green);
         break;
+      case 3:
+        showMessage("Feedback sent!", Colors.green);
+        break;
+      case 4:
+        showMessage("Could not send feedback", Colors.red);
+        break;
       default:
     }
   }
@@ -203,9 +213,15 @@ class TermDictionaryState extends State<TermDictionary>
     return _buildTermList(terms);
   }
 
-  Widget _buildSavedTermList() {
+  Widget _buildStarredTermList() {
     List<Term> starred = List<Term>.from(fullTermList.where((t) => t.starred));
-    return _buildTermList(starred);
+    if (starred.isEmpty)
+      return Container(
+          constraints: BoxConstraints.expand(),
+          alignment: Alignment.center,
+          child: Text("No terms have been starred"));
+    else
+      return _buildTermList(starred);
   }
 
   Widget _buildTermList(termList) {
@@ -233,14 +249,7 @@ class TermDictionaryState extends State<TermDictionary>
         t.name,
         style: _biggerFont,
       ),
-      trailing: new IconButton(
-          icon: Icon(t.starred ? Icons.star : Icons.star_border,
-              color: t.starred ? Colors.yellow[600] : null),
-          onPressed: () {
-            setState(() {
-              TermDatabase.get().updateStarred(t);
-            });
-          }),
+      trailing: StarButton(term: t, onChanged: _toggleStarred),
       onTap: () => _tappedTerm(t),
     );
   }
@@ -310,9 +319,13 @@ class TermDictionaryState extends State<TermDictionary>
         ]);
 
         return new Scaffold(
-          appBar: PreferredSize(
-              child: TermAppBar(term: t, onChanged: _toggleStarred),
-              preferredSize: Size.fromHeight(kToolbarHeight)),
+          appBar: new AppBar(
+            title: FittedBox(
+              child: new Text(t.name),
+              fit: BoxFit.scaleDown,
+            ),
+            actions: <Widget>[StarButton(term: t, onChanged: _toggleStarred)],
+          ),
           body: body,
           bottomNavigationBar: _getSubviewBottomBar(),
         );
@@ -447,17 +460,17 @@ class Tab2 extends StatelessWidget {
   }
 }
 
-class TermAppBar extends StatefulWidget {
-  TermAppBar({@required this.term, @required this.onChanged});
+class StarButton extends StatefulWidget {
+  StarButton({@required this.term, @required this.onChanged});
 
   final Term term;
   final ValueChanged<Term> onChanged;
 
   @override
-  _TermAppBarState createState() => _TermAppBarState();
+  _StarButtonState createState() => _StarButtonState();
 }
 
-class _TermAppBarState extends State<TermAppBar> {
+class _StarButtonState extends State<StarButton> {
   bool starred;
 
   void _handleChanged() {
@@ -469,17 +482,10 @@ class _TermAppBarState extends State<TermAppBar> {
 
   Widget build(BuildContext context) {
     starred = widget.term.starred;
-    return new AppBar(
-      title: FittedBox(
-        child: new Text(widget.term.name),
-        fit: BoxFit.scaleDown,
-      ),
-      actions: <Widget>[
-        new IconButton(
-            icon: new Icon(starred ? Icons.star : Icons.star_border,
-                color: starred ? Colors.yellow[600] : null),
-            onPressed: _handleChanged)
-      ],
-    );
+
+    return new IconButton(
+        icon: new Icon(starred ? Icons.star : Icons.star_border,
+            color: starred ? Colors.yellow[600] : null),
+        onPressed: _handleChanged);
   }
 }
