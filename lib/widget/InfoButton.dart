@@ -8,6 +8,7 @@ import 'package:tech_terms/database.dart';
 class InfoButton extends StatelessWidget {
   const InfoButton({@required this.context, @required this.onSendAttempt});
 
+  final Color buttonColor = Colors.blue;
   final BuildContext context;
   final Function onSendAttempt;
 
@@ -16,7 +17,7 @@ class InfoButton extends StatelessWidget {
     return new IconButton(
       icon: const Icon(Icons.info),
       onPressed: _show,
-      color: Colors.indigo[100],
+      color: Theme.of(context).accentColor,
     );
   }
 
@@ -44,12 +45,12 @@ class InfoButton extends StatelessWidget {
                 onPressed: _launchURL,
                 child: new Text("Website",
                     textAlign: TextAlign.center,
-                    style: new TextStyle(color: Colors.blue, fontSize: 17.0))),
+                    style: new TextStyle(color: buttonColor, fontSize: 17.0))),
             new FlatButton(
                 onPressed: _openTextField,
                 child: new Text("Feedback / Make a suggestion",
                     textAlign: TextAlign.center,
-                    style: new TextStyle(color: Colors.blue, fontSize: 17.0))),
+                    style: new TextStyle(color: buttonColor, fontSize: 17.0))),
             new Text(
               "\nData Version: $version",
               style: TextStyle(color: Colors.grey[600]),
@@ -57,7 +58,7 @@ class InfoButton extends StatelessWidget {
           ]),
           actions: <Widget>[
             new FlatButton(
-              child: new Text('Close'),
+              child: Text('Close', style: TextStyle(color: buttonColor)),
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -88,23 +89,21 @@ class InfoButton extends StatelessWidget {
                   autofocus: true),
               actions: <Widget>[
                 new FlatButton(
-                  child: new Text('Send'),
+                  child: Text('Send',
+                      style: TextStyle(color: buttonColor)),
                   onPressed: () async {
-                    var db = TermDatabase.get();
-                    bool success = await _sendEmail(controller.text);
+                    Navigator.of(context).pop();
+                    Navigator.of(context).pop();
 
-                    if (success) {
-                      db.notificationCode = 3;
-                    } else {
-                      db.notificationCode = 4;
-                    }
-                    Navigator.of(context).pop();
-                    Navigator.of(context).pop();
-                    onSendAttempt(db);
+                    if (await _sendEmail(controller.text))
+                      onSendAttempt(3);
+                    else
+                      onSendAttempt(4);
                   },
                 ),
                 new FlatButton(
-                  child: new Text('Cancel'),
+                  child: Text('Cancel',
+                      style: TextStyle(color: buttonColor)),
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
@@ -114,6 +113,7 @@ class InfoButton extends StatelessWidget {
   }
 
   Future<bool> _sendEmail(String content) async {
+    print("sending");
     String pass = await rootBundle.loadString("assets/rand.txt");
     var options = new YahooSmtpOptions()
       ..username = 'justinathill'

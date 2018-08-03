@@ -40,6 +40,7 @@ class TermDictionaryState extends State<TermDictionary>
     with SingleTickerProviderStateMixin {
   final _biggerFont = const TextStyle(fontSize: 18.0);
   final textController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
 
   BuildContext _scaffoldContext;
   TabController tabController;
@@ -75,7 +76,7 @@ class TermDictionaryState extends State<TermDictionary>
         setState(() {
           tags = tagMap;
           isLoading = false;
-          switchNotification(db);
+          switchNotification(db.notificationCode);
         });
       });
     });
@@ -111,7 +112,7 @@ class TermDictionaryState extends State<TermDictionary>
             ? const Center(child: const CircularProgressIndicator())
             : TabBarView(
                 children: <Widget>[
-                  _buildFullTermList(),
+                  _buildTermList(terms),
                   _buildTagList(),
                   _buildStarredTermList()
                 ],
@@ -129,10 +130,6 @@ class TermDictionaryState extends State<TermDictionary>
     );
   }
 
-  Widget _buildFullTermList() {
-    return _buildTermList(terms);
-  }
-
   Widget _buildStarredTermList() {
     final List<Term> starred =
         List<Term>.from(fullTermList.where((t) => t.starred));
@@ -143,22 +140,24 @@ class TermDictionaryState extends State<TermDictionary>
   }
 
   Widget _buildTermList(termList) {
-    final ScrollController scrollController = ScrollController();
-    return RefreshIndicator(
-        child: DraggableScrollbar.arrows(
-            backgroundColor: Theme.of(context).primaryColor,
-            controller: scrollController,
-            child: ListView.builder(
-                controller: scrollController,
-                padding: const EdgeInsets.all(16.0),
-                itemCount: termList.length * 2,
-                itemBuilder: (context, i) {
-                  // Add a one-pixel-high divider widget before each row in theListView.
-                  if (i.isOdd) return const Divider();
-                  final index = i ~/ 2;
-                  return _buildTermRow(termList[index]);
-                })),
-        onRefresh: _handleRefresh);
+    DraggableScrollbar scroll = DraggableScrollbar.arrows(
+        backgroundColor: Theme.of(context).primaryColor,
+        controller: _scrollController,
+        child: ListView.builder(
+            controller: _scrollController,
+            padding: const EdgeInsets.all(16.0),
+            itemCount: termList.length * 2,
+            itemBuilder: (context, i) {
+              // Add a one-pixel-high divider widget before each row in theListView.
+              if (i.isOdd) return const Divider();
+              final index = i ~/ 2;
+              return _buildTermRow(termList[index]);
+            }));
+
+    if (textController.text == "")
+      return RefreshIndicator(child: scroll, onRefresh: _handleRefresh);
+    else
+      return scroll;
   }
 
   Widget _buildTermRow(Term t) {
@@ -187,11 +186,6 @@ class TermDictionaryState extends State<TermDictionary>
       title: Text(t, style: _biggerFont),
       onTap: () => _tappedTag(t),
     );
-  }
-
-  Future<Null> _handleRefresh() async {
-    TermDatabase db = TermDatabase.get();
-    await db.refresh().then((context) => loadTerms(db));
   }
 
   void _tappedTerm(Term t) {
@@ -253,7 +247,14 @@ class TermDictionaryState extends State<TermDictionary>
     );
   }
 
+  Future<Null> _handleRefresh() async {
+    TermDatabase db = TermDatabase.get();
+    await db.refresh().then((context) => loadTerms(db));
+  }
+
   void _handleSearchTyping(String currentText) {
+    _scrollController.jumpTo(_scrollController.initialScrollOffset);
+
     if (currentText == "") {
       setState(() => terms = fullTermList);
     } else {
@@ -268,7 +269,7 @@ class TermDictionaryState extends State<TermDictionary>
   }
 
   void _toggleStarred(Term t) {
-    setState(() => TermDatabase.get().updateStarred(t));
+    TermDatabase.get().updateStarred(t).then((nil) => setState(() {}));
   }
 
   void showMessage(String msg, Color c) {
@@ -278,8 +279,8 @@ class TermDictionaryState extends State<TermDictionary>
         backgroundColor: c));
   }
 
-  void switchNotification(TermDatabase db) {
-    switch (db.notificationCode) {
+  void switchNotification(int notificationCode) {
+    switch (notificationCode) {
       case 0:
         showMessage("Could not contact server: using sample terms", Colors.red);
         break;
