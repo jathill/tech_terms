@@ -140,7 +140,8 @@ class TermDictionaryState extends State<TermDictionary>
   }
 
   Widget _buildTermList(termList) {
-    DraggableScrollbar scroll = DraggableScrollbar.arrows(
+    DraggableScrollbar scroll = DraggableScrollbar.semicircle(
+      heightScrollThumb: 70.0,
         backgroundColor: Theme.of(context).primaryColor,
         controller: _scrollController,
         child: ListView.builder(

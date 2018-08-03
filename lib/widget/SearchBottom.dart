@@ -10,14 +10,15 @@ class SearchBottom extends StatelessWidget {
   final Function onType;
   final Function onClear;
 
+  @override
   Widget build(BuildContext context) {
-    return new Container(
+    return Container(
         color: Theme.of(context).accentColor,
         alignment: Alignment.center,
         child:
             Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
-          new Icon(Icons.search),
-          new Container(
+          const Icon(Icons.search),
+          Container(
               margin: const EdgeInsets.only(left: 10.0, right: 10.0),
               width: 300.0,
               child: SearchBar(
@@ -53,7 +54,7 @@ class _SearchBarState extends State<SearchBar> {
           );
 
     return Stack(alignment: const Alignment(1.0, 1.0), children: <Widget>[
-      new TextField(
+      TextField(
           autocorrect: false,
           controller: widget.textController,
           decoration: const InputDecoration(hintText: "Search terms..."),
@@ -70,6 +71,6 @@ class ClearButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return new FlatButton(onPressed: onPressed, child: new Icon(Icons.clear));
+    return FlatButton(onPressed: onPressed, child: const Icon(Icons.clear));
   }
 }

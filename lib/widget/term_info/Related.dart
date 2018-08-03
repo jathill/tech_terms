@@ -9,36 +9,36 @@ class Related extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return new Padding(
-        padding: new EdgeInsets.only(bottom: 32.0),
-        child: new Column(
+    return Padding(
+        padding: const EdgeInsets.only(bottom: 32.0),
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            new Container(
+            Container(
               padding: const EdgeInsets.only(bottom: 8.0),
-              child: new Text(
+              child: Text(
                 Term.db_related,
-                style: new TextStyle(
+                style: const TextStyle(
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ),
-            new Wrap(
+            Wrap(
                 spacing: 8.0,
                 runSpacing: 4.0,
-                children: buildRelatedButtons(term))
+                children: _buildRelatedButtons(term))
           ],
         ));
   }
 
-  List<Widget> buildRelatedButtons(Term t) {
+  List<Widget> _buildRelatedButtons(Term t) {
     List<Widget> buttons = [];
     t.related.forEach((Term relatedTerm) {
-      final button = new OutlineButton(
+      final OutlineButton button = OutlineButton(
         onPressed: () => onPressed(relatedTerm),
-        borderSide: new BorderSide(color: Colors.lightBlue),
+        borderSide: const BorderSide(color: Colors.lightBlue),
         textColor: Colors.blueGrey,
-        child: new Text(relatedTerm.name, style: new TextStyle(fontSize: 16.0),),
+        child: Text(relatedTerm.name, style: const TextStyle(fontSize: 16.0),),
       );
       buttons.add(button);
     });

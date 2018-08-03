@@ -23,8 +23,8 @@ class _StarButtonState extends State<StarButton> {
 
   Widget build(BuildContext context) {
     starred = widget.term.starred;
-    return new IconButton(
-        icon: new Icon(starred ? Icons.star : Icons.star_border,
+    return IconButton(
+        icon: Icon(starred ? Icons.star : Icons.star_border,
             color: starred ? Colors.yellow[600] : null),
         onPressed: _handleChanged);
   }

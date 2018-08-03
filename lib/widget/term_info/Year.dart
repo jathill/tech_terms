@@ -8,23 +8,23 @@ class Year extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return new Padding(
-        padding: new EdgeInsets.only(bottom: 32.0),
-        child: new Column(
+    return Padding(
+        padding: const EdgeInsets.only(bottom: 32.0),
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            new Container(
+            Container(
               padding: const EdgeInsets.only(bottom: 8.0),
-              child: new Text(
-                Term.db_year.replaceAll(new RegExp(r'_'), ' '),
-                style: new TextStyle(
+              child: Text(
+                Term.db_year.replaceAll(RegExp(r'_'), ' '),
+                style: const TextStyle(
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ),
-            new Text(
+            Text(
               term.year.toString(),
-              style: new TextStyle(
+              style: TextStyle(
                 fontSize: 18.0,
                 color: Colors.grey[500],
               ),

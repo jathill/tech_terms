@@ -9,36 +9,36 @@ class Tags extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return new Padding(
-        padding: new EdgeInsets.only(bottom: 32.0),
-        child: new Column(
+    return Padding(
+        padding: const EdgeInsets.only(bottom: 32.0),
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            new Container(
+            Container(
               padding: const EdgeInsets.only(bottom: 8.0),
-              child: new Text(
+              child: Text(
                 Term.db_tags,
-                style: new TextStyle(
+                style: const TextStyle(
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ),
-            new Wrap(
-                spacing: 8.0, runSpacing: 4.0, children: buildTagButtons(term))
+            Wrap(
+                spacing: 8.0, runSpacing: 4.0, children: _buildTagButtons(term))
           ],
         ));
   }
 
-  List<Widget> buildTagButtons(Term t) {
+  List<Widget> _buildTagButtons(Term t) {
     List<Widget> buttons = [];
     t.tags.forEach((String name) {
-      final button = new OutlineButton(
+      final OutlineButton button = OutlineButton(
         onPressed: () => onPressed(name),
-        borderSide: new BorderSide(color: Colors.lightBlue),
+        borderSide: const BorderSide(color: Colors.lightBlue),
         textColor: Colors.blueGrey,
-        child: new Text(
+        child: Text(
           name,
-          style: new TextStyle(fontSize: 16.0),
+          style: const TextStyle(fontSize: 16.0),
         ),
       );
       buttons.add(button);

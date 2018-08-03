@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tech_terms/Term.dart';
 
 class Definition extends StatelessWidget {
-  const Definition(
+  Definition(
       {@required this.term, @required this.termList, @required this.onPressed});
 
   final Term term;
@@ -11,35 +11,35 @@ class Definition extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var defContent;
+    Widget defContent;
 
     if (term.abbreviates != null) {
       Term linkedAbbr =
           termList.firstWhere((Term t) => t.name == term.abbreviates);
-      Text defText = new Text(term.definition);
-      defContent = new FlatButton(
+      Text defText = Text(term.definition);
+      defContent = FlatButton(
           textColor: Colors.lightBlue,
           onPressed: () => onPressed(linkedAbbr),
           child: defText);
     } else {
-      defContent = new Text(
+      defContent = Text(
         term.definition,
-        style: new TextStyle(
+        style: TextStyle(
           fontSize: 18.0,
           color: Colors.grey[500],
         ),
       );
     }
 
-    return new Padding(
-        padding: new EdgeInsets.only(bottom: 32.0),
-        child: new Column(
+    return Padding(
+        padding: const EdgeInsets.only(bottom: 32.0),
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            new Container(
+            Container(
               padding: const EdgeInsets.only(bottom: 8.0),
-              child: new Text(Term.db_definition,
-                  style: new TextStyle(
+              child: Text(Term.db_definition,
+                  style: const TextStyle(
                     fontWeight: FontWeight.bold,
                   )),
             ),

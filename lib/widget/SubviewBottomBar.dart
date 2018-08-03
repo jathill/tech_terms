@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tech_terms/widget/Tabs.dart';
 
 class SubviewBottomBar extends StatelessWidget {
-  const SubviewBottomBar(
+  SubviewBottomBar(
       {@required this.tabController,
       @required this.navigatorState,
       @required this.themeData,
@@ -61,7 +61,7 @@ class GestureTab extends StatelessWidget {
     final Tab tab =
         index == 0 ? const Tab0() : index == 1 ? const Tab1() : const Tab2();
     return GestureDetector(
-        child: new Container(
+        child: Container(
             color: themeData.primaryColor, width: double.infinity, child: tab),
         onTap: () {
           while (navigatorState.canPop()) {
