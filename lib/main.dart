@@ -3,13 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:draggable_scrollbar/draggable_scrollbar.dart';
 import 'package:tech_terms/Term.dart';
 import 'package:tech_terms/database.dart';
-import 'package:tech_terms/widget/Abbreviation.dart';
-import 'package:tech_terms/widget/Definition.dart';
 import 'package:tech_terms/widget/InfoButton.dart';
-import 'package:tech_terms/widget/Maker.dart';
-import 'package:tech_terms/widget/Related.dart';
-import 'package:tech_terms/widget/Tags.dart';
-import 'package:tech_terms/widget/Year.dart';
+import 'package:tech_terms/widget/SearchBottom.dart';
+import 'package:tech_terms/widget/StarButton.dart';
+import 'package:tech_terms/widget/SubviewBottomBar.dart';
+import 'package:tech_terms/widget/Tabs.dart';
+import 'package:tech_terms/widget/term_info/Abbreviation.dart';
+import 'package:tech_terms/widget/term_info/Definition.dart';
+import 'package:tech_terms/widget/term_info/Maker.dart';
+import 'package:tech_terms/widget/term_info/Related.dart';
+import 'package:tech_terms/widget/term_info/Tags.dart';
+import 'package:tech_terms/widget/term_info/Year.dart';
 
 typedef void ArgFunction(a, b);
 
@@ -18,12 +22,11 @@ void main() => runApp(new MyApp());
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return new MaterialApp(
+    return MaterialApp(
       title: 'TechTerms',
-      theme: new ThemeData(
-        primaryColor: Colors.indigo,
-      ),
-      home: new TermDictionary(),
+      theme: ThemeData(
+          primaryColor: Colors.indigo, accentColor: Colors.indigo[100]),
+      home: TermDictionary(),
     );
   }
 }
@@ -38,25 +41,21 @@ class TermDictionaryState extends State<TermDictionary>
   final _biggerFont = const TextStyle(fontSize: 18.0);
   final textController = TextEditingController();
 
-  TabController tabController;
-  bool isLoading = false;
-  List<Term> terms = new List();
-  List<Term> fullTermList = new List();
-  Map<String, List<Term>> tags = new Map();
   BuildContext _scaffoldContext;
-  PreferredSize bottom;
-  PreferredSize searchBottom;
-  Widget searchClear = Container();
+  TabController tabController;
 
-  Color defaultColor = Colors.indigo;
+  bool isLoading = false;
+  List<Term> terms = List();
+  List<Term> fullTermList = List();
+  Map<String, List<Term>> tags = Map();
 
   @override
   void initState() {
     super.initState();
-    tabController = new TabController(length: 3, vsync: this);
-    tabController.addListener(updateBottom);
+    tabController = TabController(length: 3, vsync: this);
+    tabController.addListener(() => setState(() {}));
     setState(() => isLoading = true);
-    var db = TermDatabase.get();
+    TermDatabase db = TermDatabase.get();
 
     db.init().then((context) {
       loadTerms(db);
@@ -71,7 +70,6 @@ class TermDictionaryState extends State<TermDictionary>
         else
           terms = search(textController.text);
         fullTermList = dbTerms;
-        bottom = updateBottom();
       });
       db.getTagMap().then((tagMap) {
         setState(() {
@@ -85,32 +83,33 @@ class TermDictionaryState extends State<TermDictionary>
 
   @override
   Widget build(BuildContext context) {
+    final Text appBarTitle = tabController.index == 0
+        ? const Text('TechTerms')
+        : tabController.index == 1 ? const Text('Tags') : const Text('Starred');
+
+    final PreferredSize appBarBottom = tabController.index != 0
+        ? null
+        : PreferredSize(
+            preferredSize: const Size.fromHeight(25.0),
+            child: SearchBottom(
+                textController: textController,
+                onType: _handleSearchTyping,
+                onClear: _handleSearchClear),
+          );
+
     return new Scaffold(
-      appBar: new AppBar(
-          title: tabController.index == 0
-              ? new Text('TechTerms')
-              : tabController.index == 1
-                  ? new Text('Tags')
-                  : new Text('Starred'),
+      appBar: AppBar(
+          title: appBarTitle,
           actions: <Widget>[
-            new InfoButton(context: context, onSendAttempt: switchNotification)
+            InfoButton(context: context, onSendAttempt: switchNotification)
           ],
-          bottom: tabController.index != 0
-              ? null
-              : PreferredSize(
-                  preferredSize: const Size.fromHeight(25.0),
-                  child: SearchBottom(
-                      tabController: tabController,
-                      textController: textController,
-                      onChanged: handleSearchBottom,
-                      searchClear: searchClear),
-                )),
-      body: new Builder(builder: (BuildContext context) {
+          bottom: appBarBottom),
+      body: Builder(builder: (BuildContext context) {
         _scaffoldContext = context;
 
         return isLoading
-            ? new Center(child: new CircularProgressIndicator())
-            : new TabBarView(
+            ? const Center(child: const CircularProgressIndicator())
+            : TabBarView(
                 children: <Widget>[
                   _buildFullTermList(),
                   _buildTagList(),
@@ -119,38 +118,163 @@ class TermDictionaryState extends State<TermDictionary>
                 controller: tabController,
               );
       }),
-      bottomNavigationBar: new Hero(
+      bottomNavigationBar: Hero(
           tag: "bottom",
-          child: new Material(
-              color: defaultColor,
-              child: new TabBar(
-                  indicatorColor: Colors.indigo[100],
+          child: Material(
+              color: Theme.of(context).primaryColor,
+              child: TabBar(
+                  indicatorColor: Theme.of(context).accentColor,
                   controller: tabController,
-                  tabs: <Widget>[new Tab0(), new Tab1(), new Tab2()]))),
+                  tabs: <Widget>[const Tab0(), const Tab1(), const Tab2()]))),
     );
   }
 
-  void handleSearchBottom() {
-    String currentText = textController.text;
+  Widget _buildFullTermList() {
+    return _buildTermList(terms);
+  }
 
+  Widget _buildStarredTermList() {
+    final List<Term> starred =
+        List<Term>.from(fullTermList.where((t) => t.starred));
+    if (starred.isEmpty)
+      return Center(child: const Text("No terms have been starred"));
+    else
+      return _buildTermList(starred);
+  }
+
+  Widget _buildTermList(termList) {
+    final ScrollController scrollController = ScrollController();
+    return RefreshIndicator(
+        child: DraggableScrollbar.arrows(
+            backgroundColor: Theme.of(context).primaryColor,
+            controller: scrollController,
+            child: ListView.builder(
+                controller: scrollController,
+                padding: const EdgeInsets.all(16.0),
+                itemCount: termList.length * 2,
+                itemBuilder: (context, i) {
+                  // Add a one-pixel-high divider widget before each row in theListView.
+                  if (i.isOdd) return const Divider();
+                  final index = i ~/ 2;
+                  return _buildTermRow(termList[index]);
+                })),
+        onRefresh: _handleRefresh);
+  }
+
+  Widget _buildTermRow(Term t) {
+    return ListTile(
+      title: Text(t.name, style: _biggerFont),
+      trailing: StarButton(term: t, onChanged: _toggleStarred),
+      onTap: () => _tappedTerm(t),
+    );
+  }
+
+  Widget _buildTagList() {
+    final List<String> tagNames = List<String>.from(tags.keys);
+    return ListView.builder(
+        padding: const EdgeInsets.all(16.0),
+        itemCount: tagNames.length * 2,
+        itemBuilder: (context, i) {
+          // Add a one-pixel-high divider widget before each row in theListView.
+          if (i.isOdd) return const Divider();
+          final index = i ~/ 2;
+          return _buildTagRow(tagNames[index]);
+        });
+  }
+
+  Widget _buildTagRow(String t) {
+    return ListTile(
+      title: Text(t, style: _biggerFont),
+      onTap: () => _tappedTag(t),
+    );
+  }
+
+  Future<Null> _handleRefresh() async {
+    TermDatabase db = TermDatabase.get();
+    await db.refresh().then((context) => loadTerms(db));
+  }
+
+  void _tappedTerm(Term t) {
+    final NavigatorState navigatorState = Navigator.of(context);
+    navigatorState.push(
+      MaterialPageRoute(builder: (context) {
+        Column col = Column(
+            crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[]);
+
+        if (t.abbreviation != null) col.children.add(Abbreviation(term: t));
+        col.children.add(Definition(
+            term: t, termList: fullTermList, onPressed: _tappedTerm));
+        if (t.maker != null) col.children.add(Maker(term: t));
+        if (t.year != null) col.children.add(Year(term: t));
+        if (t.tags != null)
+          col.children.add(Tags(term: t, onPressed: _tappedTag));
+        if (t.related != null)
+          col.children.add(Related(term: t, onPressed: _tappedTerm));
+
+        ListView body = ListView(children: <Widget>[
+          Container(padding: const EdgeInsets.all(32.0), child: col)
+        ]);
+
+        return Scaffold(
+          appBar: AppBar(
+            title: FittedBox(
+              child: Text(t.name),
+              fit: BoxFit.scaleDown,
+            ),
+            actions: <Widget>[StarButton(term: t, onChanged: _toggleStarred)],
+          ),
+          body: body,
+          bottomNavigationBar: SubviewBottomBar(
+              tabController: tabController,
+              navigatorState: navigatorState,
+              themeData: Theme.of(context),
+              onChanged: _handleSubviewTabChange),
+        );
+      }),
+    );
+  }
+
+  void _tappedTag(String tagName) {
+    final NavigatorState navigatorState = Navigator.of(context);
+    navigatorState.push(
+      MaterialPageRoute(builder: (context) {
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(tagName),
+          ),
+          body: _buildTermList(tags[tagName]),
+          bottomNavigationBar: SubviewBottomBar(
+              tabController: tabController,
+              navigatorState: navigatorState,
+              themeData: Theme.of(context),
+              onChanged: _handleSubviewTabChange),
+        );
+      }),
+    );
+  }
+
+  void _handleSearchTyping(String currentText) {
     if (currentText == "") {
-      setState(() {
-        terms = fullTermList;
-        searchClear = Container();
-      });
+      setState(() => terms = fullTermList);
     } else {
       List<Term> results = search(currentText);
-      setState(() {
-        terms = results;
-        searchClear = getClearButton();
-      });
+      setState(() => terms = results);
     }
   }
 
+  void _handleSearchClear() {
+    textController.clear();
+    setState(() => terms = fullTermList);
+  }
+
+  void _toggleStarred(Term t) {
+    setState(() => TermDatabase.get().updateStarred(t));
+  }
+
   void showMessage(String msg, Color c) {
-    Scaffold.of(_scaffoldContext).showSnackBar(new SnackBar(
-        content: new Text(msg),
-        duration: new Duration(seconds: 3),
+    Scaffold.of(_scaffoldContext).showSnackBar(SnackBar(
+        content: Text(msg),
+        duration: const Duration(seconds: 3),
         backgroundColor: c));
   }
 
@@ -176,316 +300,20 @@ class TermDictionaryState extends State<TermDictionary>
     }
   }
 
-  Widget updateBottom() {
-    setState(() {
-      if (tabController.index == 0) {
-        bottom = searchBottom;
-      } else
-        bottom = null;
-    });
-    return bottom;
-  }
-
   List<Term> search(currentText) {
-    List<Term> results = new List();
-    fullTermList.forEach((Term t) {
-      if (t.name.toLowerCase().startsWith(currentText.toLowerCase()))
-        results.add(t);
-    });
-    fullTermList.forEach((Term t) {
-      if (t.name.toLowerCase().contains(currentText.toLowerCase())) if (!results
-          .contains(t)) results.add(t);
-    });
+    List<Term> results = List<Term>.from(fullTermList.where((Term t) =>
+        t.name.toLowerCase().startsWith(currentText.toLowerCase())));
+
+    results.addAll(List<Term>.from(fullTermList.where(
+        (t) => t.name.toLowerCase().contains(currentText.toLowerCase()))));
 
     return results;
   }
 
-  Widget getClearButton() {
-    return new FlatButton(
-        onPressed: () {
-          textController.clear();
-          handleSearchBottom();
-        },
-        child: new Icon(Icons.clear));
-  }
-
-  Widget _buildFullTermList() {
-    return _buildTermList(terms);
-  }
-
-  Widget _buildStarredTermList() {
-    List<Term> starred = List<Term>.from(fullTermList.where((t) => t.starred));
-    if (starred.isEmpty)
-      return Container(
-          constraints: BoxConstraints.expand(),
-          alignment: Alignment.center,
-          child: Text("No terms have been starred"));
-    else
-      return _buildTermList(starred);
-  }
-
-  Widget _buildTermList(termList) {
-    ScrollController scrollController = ScrollController();
-    return new RefreshIndicator(
-        child: DraggableScrollbar.arrows(
-            backgroundColor: Colors.indigo[100],
-            controller: scrollController,
-            child: new ListView.builder(
-                controller: scrollController,
-                padding: const EdgeInsets.all(16.0),
-                itemCount: termList.length * 2,
-                itemBuilder: (context, i) {
-                  // Add a one-pixel-high divider widget before each row in theListView.
-                  if (i.isOdd) return new Divider();
-                  final index = i ~/ 2;
-                  return _buildTermRow(termList[index]);
-                })),
-        onRefresh: _handleRefresh);
-  }
-
-  Widget _buildTermRow(Term t) {
-    return new ListTile(
-      title: new Text(
-        t.name,
-        style: _biggerFont,
-      ),
-      trailing: StarButton(term: t, onChanged: _toggleStarred),
-      onTap: () => _tappedTerm(t),
-    );
-  }
-
-  Widget _buildTagList() {
-    List<String> tagNames = List<String>.from(tags.keys);
-    return new ListView.builder(
-        padding: const EdgeInsets.all(16.0),
-        itemCount: tagNames.length * 2,
-        itemBuilder: (context, i) {
-          // Add a one-pixel-high divider widget before each row in theListView.
-          if (i.isOdd) return new Divider();
-          final index = i ~/ 2;
-          return _buildTagRow(tagNames[index]);
-        });
-  }
-
-  Widget _buildTagRow(String t) {
-    return new ListTile(
-      title: new Text(t, style: _biggerFont),
-      onTap: () => _tappedTag(t),
-    );
-  }
-
-  Future<Null> _handleRefresh() async {
-    var db = TermDatabase.get();
-    await db.refresh().then((context) => loadTerms(db));
-  }
-
-  void _toggleStarred(Term t) {
-    setState(() {
-      TermDatabase.get().updateStarred(t);
-    });
-  }
-
-  void _tappedTerm(Term t) {
-    Navigator.of(_scaffoldContext).push(
-      new MaterialPageRoute(builder: (context) {
-        var col = new Column(
-            crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[]);
-
-        if (t.abbreviation != null) {
-          col.children.add(new Abbreviation(term: t));
-        }
-
-        col.children.add(new Definition(
-            term: t, termList: fullTermList, onPressed: _tappedTerm));
-
-        if (t.maker != null) {
-          col.children.add(new Maker(term: t));
-        }
-        if (t.year != null) {
-          col.children.add(new Year(term: t));
-        }
-        if (t.tags != null) {
-          col.children.add(new Tags(
-            term: t,
-            onPressed: _tappedTag,
-          ));
-        }
-        if (t.related != null) {
-          col.children.add(new Related(term: t, onPressed: _tappedTerm));
-        }
-
-        var body = ListView(children: <Widget>[
-          new Container(padding: const EdgeInsets.all(32.0), child: col)
-        ]);
-
-        return new Scaffold(
-          appBar: new AppBar(
-            title: FittedBox(
-              child: new Text(t.name),
-              fit: BoxFit.scaleDown,
-            ),
-            actions: <Widget>[StarButton(term: t, onChanged: _toggleStarred)],
-          ),
-          body: body,
-          bottomNavigationBar: _getSubviewBottomBar(),
-        );
-      }),
-    );
-  }
-
-  Widget _getSubviewBottomBar() {
-    return new Hero(
-        tag: "bottom",
-        child: new Material(
-            color: defaultColor,
-            child: new TabBar(
-                indicatorColor: Colors.indigo[100],
-                controller: tabController,
-                tabs: <Widget>[
-                  new GestureDetector(
-                      child: new Container(
-                          color: defaultColor,
-                          width: double.infinity,
-                          child: new Tab0()),
-                      onTap: () {
-                        while (Navigator.of(context).canPop()) {
-                          Navigator.of(context).pop();
-                        }
-                        setState(() {
-                          if (tabController.index != 0) tabController.index = 0;
-                        });
-                      }),
-                  new GestureDetector(
-                      child: new Container(
-                          color: defaultColor,
-                          width: double.infinity,
-                          child: new Tab1()),
-                      onTap: () {
-                        while (Navigator.of(context).canPop()) {
-                          Navigator.of(context).pop();
-                        }
-                        setState(() {
-                          if (tabController.index != 1) tabController.index = 1;
-                        });
-                      }),
-                  new GestureDetector(
-                      child: new Container(
-                          color: defaultColor,
-                          width: double.infinity,
-                          child: new Tab2()),
-                      onTap: () {
-                        while (Navigator.of(context).canPop()) {
-                          Navigator.of(context).pop();
-                        }
-                        setState(() {
-                          if (tabController.index != 2) tabController.index = 2;
-                        });
-                      })
-                ])));
-  }
-
-  void _tappedTag(String tagName) {
-    Navigator.of(context).push(
-      new MaterialPageRoute(builder: (context) {
-        return new Scaffold(
-          appBar: new AppBar(
-            title: new Text(tagName),
-          ),
-          body: _buildTermList(tags[tagName]),
-          bottomNavigationBar: _getSubviewBottomBar(),
-        );
-      }),
-    );
-  }
-}
-
-class SearchBottom extends StatelessWidget {
-  SearchBottom(
-      {@required this.tabController,
-      @required this.textController,
-      @required this.onChanged,
-      @required this.searchClear});
-
-  final TabController tabController;
-  final TextEditingController textController;
-  final Function onChanged;
-  final Widget searchClear;
-
-  Widget build(BuildContext context) {
-    return new Container(
-        color: Colors.indigo[100],
-        alignment: Alignment.center,
-        child:
-            Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
-          new Icon(Icons.search),
-          new Container(
-              margin: const EdgeInsets.only(left: 10.0, right: 10.0),
-              width: 300.0,
-              child: getSearchBar())
-        ]));
-  }
-
-  Widget getSearchBar() {
-    return new Stack(alignment: const Alignment(1.0, 1.0), children: <Widget>[
-      new TextField(
-          autocorrect: false,
-          controller: textController,
-          decoration: new InputDecoration(hintText: "Search terms..."),
-          onChanged: (context) async {
-            onChanged();
-          }),
-      searchClear
-    ]);
-  }
-}
-
-class Tab0 extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return new Tab(icon: new Icon(Icons.home));
-  }
-}
-
-class Tab1 extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return new Tab(icon: new Icon(Icons.collections_bookmark));
-  }
-}
-
-class Tab2 extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return new Tab(icon: new Icon(Icons.star));
-  }
-}
-
-class StarButton extends StatefulWidget {
-  StarButton({@required this.term, @required this.onChanged});
-
-  final Term term;
-  final ValueChanged<Term> onChanged;
-
-  @override
-  _StarButtonState createState() => _StarButtonState();
-}
-
-class _StarButtonState extends State<StarButton> {
-  bool starred;
-
-  void _handleChanged() {
-    setState(() {
-      starred = !starred;
-    });
-    widget.onChanged(widget.term);
-  }
-
-  Widget build(BuildContext context) {
-    starred = widget.term.starred;
-
-    return new IconButton(
-        icon: new Icon(starred ? Icons.star : Icons.star_border,
-            color: starred ? Colors.yellow[600] : null),
-        onPressed: _handleChanged);
+  void _handleSubviewTabChange(int index) {
+    if (tabController.index != index)
+      setState(() {
+        tabController.index = index;
+      });
   }
 }
