@@ -108,16 +108,29 @@ class TermDictionaryState extends State<TermDictionary>
       body: Builder(builder: (BuildContext context) {
         _scaffoldContext = context;
 
-        return isLoading
-            ? const Center(child: const CircularProgressIndicator())
-            : TabBarView(
-                children: <Widget>[
-                  _buildTermList(terms),
-                  _buildTagList(),
-                  _buildStarredTermList()
-                ],
-                controller: tabController,
-              );
+        if (isLoading) {
+          return Container(
+              constraints: BoxConstraints.expand(),
+              child: Column(
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    const CircularProgressIndicator(),
+                    const Padding(
+                        padding: const EdgeInsets.only(top: 30.0),
+                        child: const Text(
+                            "Just a second! Downloading the lastest TechTerms."))
+                  ]));
+        }
+
+        return TabBarView(
+          children: <Widget>[
+            _buildTermList(terms),
+            _buildTagList(),
+            _buildStarredTermList()
+          ],
+          controller: tabController,
+        );
       }),
       bottomNavigationBar: Hero(
           tag: "bottom",
@@ -141,7 +154,7 @@ class TermDictionaryState extends State<TermDictionary>
 
   Widget _buildTermList(termList) {
     DraggableScrollbar scroll = DraggableScrollbar.semicircle(
-      heightScrollThumb: 70.0,
+        heightScrollThumb: 70.0,
         backgroundColor: Theme.of(context).primaryColor,
         controller: _scrollController,
         child: ListView.builder(
@@ -306,8 +319,10 @@ class TermDictionaryState extends State<TermDictionary>
     List<Term> results = List<Term>.from(fullTermList.where((Term t) =>
         t.name.toLowerCase().startsWith(currentText.toLowerCase())));
 
-    results.addAll(List<Term>.from(fullTermList.where(
-        (t) => t.name.toLowerCase().contains(currentText.toLowerCase()))));
+    fullTermList.forEach((t) {
+      if (t.name.toLowerCase().contains(currentText.toLowerCase()) &&
+          !results.contains(t)) results.add(t);
+    });
 
     return results;
   }
