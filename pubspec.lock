@@ -71,19 +71,14 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.14.4"
-  cupertino_icons:
-    dependency: "direct main"
-    description:
-      name: cupertino_icons
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.1.2"
   draggable_scrollbar:
     dependency: "direct main"
     description:
-      name: draggable_scrollbar
-      url: "https://pub.dartlang.org"
-    source: hosted
+      path: "."
+      ref: HEAD
+      resolved-ref: "4122aa053983dc481aade00b33e7ad1c9d9e2956"
+      url: "git://github.com/jathill/flutter-draggable-scrollbar.git"
+    source: git
     version: "0.0.3"
   flutter:
     dependency: "direct main"
@@ -95,6 +90,13 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  font_awesome_flutter:
+    dependency: "direct main"
+    description:
+      name: font_awesome_flutter
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "7.1.0"
   front_end:
     dependency: transitive
     description:

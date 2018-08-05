@@ -7,13 +7,15 @@ dependencies:
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^0.1.2
-  sqflite: any
-  path_provider: "^0.3.1"
-  http: "^0.11.3+16"
-  url_launcher: ^3.0.3
   connectivity: ^0.3.1
-  draggable_scrollbar: ^0.0.3
+  font_awesome_flutter: ^7.1.0
+  http: "^0.11.3+16"
+  path_provider: "^0.3.1"
+  sqflite: any
+  url_launcher: ^3.0.3
+  draggable_scrollbar:
+    git:
+      url: git://github.com/jathill/flutter-draggable-scrollbar.git
   mailer:
     git:
       url: git://github.com/jathill/mailer.git
@@ -37,8 +39,7 @@ flutter:
 
 
   assets:
-    - assets/sampleData.json
-    - assets/rand.txt
+    - assets/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.io/assets-and-images/#resolution-aware.

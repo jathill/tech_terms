@@ -9,3 +9,4 @@ build/
 .flutter-plugins
 */key.properties
 */rand.txt
+flutter_**.png
