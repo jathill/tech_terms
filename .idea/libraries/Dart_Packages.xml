@@ -75,7 +75,7 @@
         <entry key="draggable_scrollbar">
           <value>
             <list>
-              <option value="$USER_HOME$/flutter/.pub-cache/git/flutter-draggable-scrollbar-4122aa053983dc481aade00b33e7ad1c9d9e2956/lib" />
+              <option value="$USER_HOME$/flutter/.pub-cache/git/flutter-draggable-scrollbar-605c60ca54b44b75869d72f7f0933bc03526ea11/lib" />
             </list>
           </value>
         </entry>
@@ -432,7 +432,7 @@
       </option>
     </properties>
     <CLASSES>
-      <root url="file://$USER_HOME$/flutter/.pub-cache/git/flutter-draggable-scrollbar-4122aa053983dc481aade00b33e7ad1c9d9e2956/lib" />
+      <root url="file://$USER_HOME$/flutter/.pub-cache/git/flutter-draggable-scrollbar-605c60ca54b44b75869d72f7f0933bc03526ea11/lib" />
       <root url="file://$USER_HOME$/flutter/.pub-cache/git/mailer-2081144b23c7733143e17e4310b74915945af84f/lib" />
       <root url="file://$USER_HOME$/flutter/.pub-cache/hosted/pub.dartlang.org/analyzer-0.31.2-alpha.2/lib" />
       <root url="file://$USER_HOME$/flutter/.pub-cache/hosted/pub.dartlang.org/args-1.4.3/lib" />

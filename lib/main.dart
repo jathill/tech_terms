@@ -36,12 +36,15 @@ class TermDictionaryState extends State<TermDictionary>
     with SingleTickerProviderStateMixin {
   final _biggerFont = const TextStyle(fontSize: 18.0);
   final textController = TextEditingController();
-  final ScrollController _scrollController = ScrollController();
 
   BuildContext _scaffoldContext;
   TabController tabController;
 
+  bool jumpToTop = false;
   bool isLoading = false;
+  double listViewOffset0 = 0.0;
+  double listViewOffset1 = 0.0;
+  double listViewOffset2 = 0.0;
   List<Term> terms = List();
   List<Term> fullTermList = List();
   Map<String, List<Term>> tags = Map();
@@ -121,7 +124,7 @@ class TermDictionaryState extends State<TermDictionary>
 
         return TabBarView(
           children: <Widget>[
-            _buildTermList(terms),
+            _buildTermList(),
             _buildTagList(),
             _buildStarredTermList()
           ],
@@ -144,30 +147,90 @@ class TermDictionaryState extends State<TermDictionary>
         List<Term>.from(fullTermList.where((t) => t.starred));
     if (starred.isEmpty)
       return Center(child: const Text("No terms have been starred"));
-    else
-      return _buildTermList(starred);
+    else {
+      GetOffsetMethod getOffsetMethod = () => listViewOffset2;
+      SetOffsetMethod setOffsetMethod =
+          (offset) => this.listViewOffset2 = offset;
+
+      StatefulListView listView = StatefulListView(
+        getOffsetMethod: getOffsetMethod,
+        setOffsetMethod: setOffsetMethod,
+        padding: const EdgeInsets.all(16.0),
+        itemCount: starred.length * 2,
+        itemBuilder: _getItemBuilder(starred, _buildTermRow),
+        useDraggable: starred.length >= 15,
+        draggableColor: Theme.of(context).primaryColor,
+        draggableHeight: 70.0,
+      );
+
+      return listView;
+    }
   }
 
-  Widget _buildTermList(termList) {
-    DraggableScrollbar scroll = DraggableScrollbar.semicircle(
-        heightScrollThumb: 70.0,
-        backgroundColor: Theme.of(context).primaryColor,
-        controller: _scrollController,
-        child: ListView.builder(
-            controller: _scrollController,
-            padding: const EdgeInsets.all(16.0),
-            itemCount: termList.length * 2,
-            itemBuilder: (context, i) {
-              // Add a one-pixel-high divider widget before each row in theListView.
-              if (i.isOdd) return const Divider();
-              final index = i ~/ 2;
-              return _buildTermRow(termList[index]);
-            }));
+  IndexedWidgetBuilder _getItemBuilder(List list, Function buildItem) {
+    return (context, i) {
+      if (i.isOdd) return const Divider();
+      final index = i ~/ 2;
+      return buildItem(list[index]);
+    };
+  }
 
-    if (textController.text == "")
-      return RefreshIndicator(child: scroll, onRefresh: _handleRefresh);
-    else
-      return scroll;
+  Widget _buildStandardList(List list, Function buildItem) {
+    ScrollController scrollController = ScrollController();
+
+    ListView listView = ListView.builder(
+        controller: scrollController,
+        padding: const EdgeInsets.all(16.0),
+        itemCount: list.length * 2,
+        itemBuilder: _getItemBuilder(list, buildItem));
+
+    if (list.length >= 15) {
+      return DraggableScrollbar.semicircle(
+          child: listView,
+          controller: scrollController,
+          heightScrollThumb: 70.0,
+          backgroundColor: Theme.of(context).primaryColor);
+    } else {
+      return listView;
+    }
+  }
+
+  Widget _buildTagList() {
+    GetOffsetMethod getOffsetMethod = () => listViewOffset1;
+    SetOffsetMethod setOffsetMethod = (offset) => this.listViewOffset1 = offset;
+    List<String> tagList = List<String>.from(tags.keys);
+
+    return StatefulListView(
+      getOffsetMethod: getOffsetMethod,
+      setOffsetMethod: setOffsetMethod,
+      itemCount: tagList.length * 2,
+      itemBuilder: _getItemBuilder(tagList, _buildTagRow),
+      useDraggable: true,
+      draggableColor: Theme.of(context).primaryColor,
+      draggableHeight: 70.0,
+      padding: const EdgeInsets.all(16.0),
+    );
+  }
+
+  Widget _buildTermList() {
+    GetOffsetMethod getOffsetMethod = () => listViewOffset0;
+    SetOffsetMethod setOffsetMethod = (offset) => this.listViewOffset0 = offset;
+
+    StatefulListView scroll = StatefulListView(
+      getOffsetMethod: getOffsetMethod,
+      setOffsetMethod: setOffsetMethod,
+      padding: const EdgeInsets.all(16.0),
+      itemCount: terms.length * 2,
+      itemBuilder: _getItemBuilder(terms, _buildTermRow),
+      useDraggable: terms.length >= 15,
+      draggableColor: Theme.of(context).primaryColor,
+      draggableHeight: 70.0,
+      jumpToTop: jumpToTop,
+      canRefresh: textController.text == "",
+      onRefresh: _handleRefresh,
+    );
+
+    return scroll;
   }
 
   Widget _buildTermRow(Term t) {
@@ -176,19 +239,6 @@ class TermDictionaryState extends State<TermDictionary>
       trailing: StarButton(term: t, onChanged: _toggleStarred),
       onTap: () => _tappedTerm(t),
     );
-  }
-
-  Widget _buildTagList() {
-    final List<String> tagNames = List<String>.from(tags.keys);
-    return ListView.builder(
-        padding: const EdgeInsets.all(16.0),
-        itemCount: tagNames.length * 2,
-        itemBuilder: (context, i) {
-          // Add a one-pixel-high divider widget before each row in theListView.
-          if (i.isOdd) return const Divider();
-          final index = i ~/ 2;
-          return _buildTagRow(tagNames[index]);
-        });
   }
 
   Widget _buildTagRow(String t) {
@@ -246,7 +296,7 @@ class TermDictionaryState extends State<TermDictionary>
           appBar: AppBar(
             title: Text(tagName),
           ),
-          body: _buildTermList(tags[tagName]),
+          body: _buildStandardList(tags[tagName], _buildTermRow),
           bottomNavigationBar: SubviewBottomBar(
               tabController: tabController,
               navigatorState: navigatorState,
@@ -263,13 +313,22 @@ class TermDictionaryState extends State<TermDictionary>
   }
 
   void _handleSearchTyping(String currentText) {
-    _scrollController.jumpTo(_scrollController.initialScrollOffset);
+    //_scrollController.jumpTo(_scrollController.initialScrollOffset);
 
     if (currentText == "") {
       setState(() => terms = fullTermList);
     } else {
       List<Term> results = search(currentText);
-      setState(() => terms = results);
+      setState(() {
+        terms = results;
+        jumpToTop = true;
+      });
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        setState(() {
+          jumpToTop = false;
+        });
+      });
     }
   }
 

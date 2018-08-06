@@ -76,7 +76,7 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: "4122aa053983dc481aade00b33e7ad1c9d9e2956"
+      resolved-ref: "605c60ca54b44b75869d72f7f0933bc03526ea11"
       url: "git://github.com/jathill/flutter-draggable-scrollbar.git"
     source: git
     version: "0.0.3"
