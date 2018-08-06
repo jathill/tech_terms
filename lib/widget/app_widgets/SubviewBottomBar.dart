@@ -1,5 +1,8 @@
+// Copyright 2018 Justin Athill
+
 import 'package:flutter/material.dart';
-import 'package:tech_terms/widget/Tabs.dart';
+
+import 'package:tech_terms/widget/app_widgets/Tabs.dart';
 
 class SubviewBottomBar extends StatelessWidget {
   SubviewBottomBar(

@@ -1,4 +1,7 @@
+// Copyright 2018 Justin Athill
+
 import 'package:meta/meta.dart';
+
 
 class Relation {
   static const db_id = "id";

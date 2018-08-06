@@ -1,4 +1,7 @@
+// Copyright 2018 Justin Athill
+
 import 'package:flutter/material.dart';
+
 import 'package:tech_terms/Term.dart';
 
 class Definition extends StatelessWidget {

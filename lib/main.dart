@@ -1,19 +1,15 @@
+// Copyright 2018 Justin Athill
+
 import 'dart:async';
+
 import 'package:flutter/material.dart';
+
 import 'package:draggable_scrollbar/draggable_scrollbar.dart';
+
 import 'package:tech_terms/Term.dart';
 import 'package:tech_terms/database.dart';
-import 'package:tech_terms/widget/InfoButton.dart';
-import 'package:tech_terms/widget/SearchBottom.dart';
-import 'package:tech_terms/widget/StarButton.dart';
-import 'package:tech_terms/widget/SubviewBottomBar.dart';
-import 'package:tech_terms/widget/Tabs.dart';
-import 'package:tech_terms/widget/term_info/Abbreviation.dart';
-import 'package:tech_terms/widget/term_info/Definition.dart';
-import 'package:tech_terms/widget/term_info/Maker.dart';
-import 'package:tech_terms/widget/term_info/Related.dart';
-import 'package:tech_terms/widget/term_info/Tags.dart';
-import 'package:tech_terms/widget/term_info/Year.dart';
+import 'package:tech_terms/widget/app_widgets.dart';
+import 'package:tech_terms/widget/info_widgets.dart';
 
 typedef void ArgFunction(a, b);
 

@@ -1,3 +1,5 @@
+// Copyright 2018 Justin Athill
+
 import 'package:flutter/material.dart';
 
 class SearchBottom extends StatelessWidget {

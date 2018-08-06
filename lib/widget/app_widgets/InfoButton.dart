@@ -1,8 +1,13 @@
+// Copyright 2018 Justin Athill
+
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
-import 'package:url_launcher/url_launcher.dart';
+
 import 'package:mailer/mailer.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 import 'package:tech_terms/database.dart';
 
 class InfoButton extends StatelessWidget {

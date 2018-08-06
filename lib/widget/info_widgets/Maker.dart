@@ -1,8 +1,11 @@
+// Copyright 2018 Justin Athill
+
 import 'package:flutter/material.dart';
+
 import 'package:tech_terms/Term.dart';
 
-class Abbreviation extends StatelessWidget {
-  const Abbreviation({@required this.term});
+class Maker extends StatelessWidget {
+  const Maker({@required this.term});
 
   final Term term;
 
@@ -16,14 +19,14 @@ class Abbreviation extends StatelessWidget {
             Container(
               padding: const EdgeInsets.only(bottom: 8.0),
               child: Text(
-                Term.db_abbreviation,
+                Term.db_maker,
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ),
             Text(
-              term.abbreviation,
+              term.maker,
               style: TextStyle(
                 fontSize: 18.0,
                 color: Colors.grey[500],

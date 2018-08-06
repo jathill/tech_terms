@@ -1,3 +1,5 @@
+// Copyright 2018 Justin Athill
+
 import 'package:flutter/material.dart';
 
 class Tab0 extends Tab {

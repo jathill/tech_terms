@@ -1,8 +1,11 @@
+// Copyright 2018 Justin Athill
+
 import 'package:flutter/material.dart';
+
 import 'package:tech_terms/Term.dart';
 
-class Year extends StatelessWidget {
-  const Year({@required this.term});
+class Abbreviation extends StatelessWidget {
+  const Abbreviation({@required this.term});
 
   final Term term;
 
@@ -16,14 +19,14 @@ class Year extends StatelessWidget {
             Container(
               padding: const EdgeInsets.only(bottom: 8.0),
               child: Text(
-                Term.db_year.replaceAll(RegExp(r'_'), ' '),
+                Term.db_abbreviation,
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ),
             Text(
-              term.year.toString(),
+              term.abbreviation,
               style: TextStyle(
                 fontSize: 18.0,
                 color: Colors.grey[500],
