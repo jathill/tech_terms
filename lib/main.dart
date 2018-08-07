@@ -118,7 +118,7 @@ class TermDictionaryState extends State<TermDictionary>
                     const Padding(
                         padding: const EdgeInsets.only(top: 30.0),
                         child: const Text(
-                            "Just a second! Downloading the lastest TechTerms."))
+                            "Just a second! Downloading the latest TechTerms."))
                   ]));
         }
 
@@ -277,7 +277,11 @@ class TermDictionaryState extends State<TermDictionary>
             ),
             actions: <Widget>[StarButton(term: t, onChanged: _toggleStarred)],
           ),
-          body: body,
+          body: GestureDetector(
+              child: body,
+              onHorizontalDragEnd: (detail) {
+                if (detail.primaryVelocity >= 200) navigatorState.pop();
+              }),
           bottomNavigationBar: SubviewBottomBar(
               tabController: tabController,
               navigatorState: navigatorState,
@@ -296,7 +300,11 @@ class TermDictionaryState extends State<TermDictionary>
           appBar: AppBar(
             title: Text(tagName),
           ),
-          body: _buildStandardList(tags[tagName], _buildTermRow),
+          body: GestureDetector(
+              child: _buildStandardList(tags[tagName], _buildTermRow),
+              onHorizontalDragEnd: (detail) {
+                if (detail.primaryVelocity >= 200) navigatorState.pop();
+              }),
           bottomNavigationBar: SubviewBottomBar(
               tabController: tabController,
               navigatorState: navigatorState,

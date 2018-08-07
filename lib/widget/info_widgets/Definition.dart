@@ -19,7 +19,12 @@ class Definition extends StatelessWidget {
     if (term.abbreviates != null) {
       Term linkedAbbr =
           termList.firstWhere((Term t) => t.name == term.abbreviates);
-      Text defText = Text(term.definition);
+      Text defText = Text(
+        term.definition,
+        style: const TextStyle(
+          fontSize: 18.0,
+        ),
+      );
       defContent = FlatButton(
           textColor: Colors.lightBlue,
           onPressed: () => onPressed(linkedAbbr),

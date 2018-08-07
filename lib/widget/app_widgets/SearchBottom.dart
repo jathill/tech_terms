@@ -19,14 +19,18 @@ class SearchBottom extends StatelessWidget {
         alignment: Alignment.center,
         child:
             Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
-          const Icon(Icons.search),
-          Container(
-              margin: const EdgeInsets.only(left: 10.0, right: 10.0),
-              width: 300.0,
+          Padding(
+              padding: EdgeInsets.only(left: 15.0, right: 5.0),
+              child: const Icon(Icons.search)),
+          Expanded(
               child: SearchBar(
                   textController: textController,
                   onType: onType,
                   onClear: onClear))
+//          Container(
+//              margin: const EdgeInsets.only(left: 10.0, right: 10.0),
+//
+//              )
         ]));
   }
 }

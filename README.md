@@ -12,6 +12,6 @@ TechTerms is a quick-reference dictionary for software development terms. TechTe
 
 - Star and save terms for easy reference
 
-## Getting Started
+## Info
 
 Built with [flutter](https://flutter.io/)!
