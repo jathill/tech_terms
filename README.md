@@ -15,3 +15,7 @@ TechTerms is a quick-reference dictionary for software development terms. TechTe
 ## Info
 
 Built with [flutter](https://flutter.io/)!
+
+[Download on the App Store](https://itunes.apple.com/us/app/techterms-software-dictionary/id1413915542?ls=1&mt=8)
+
+[Download on the Google Play Store](https://play.google.com/store/apps/details?id=com.athillapps.techterms)
