@@ -5,8 +5,17 @@
 .pub/
 
 build/
+.idea/
+android/
+ios/
+img/
+test/
 
+.metadata
 .flutter-plugins
+pubspec.lock
+tech_terms.iml
+tech_terms_android.iml
 */key.properties
 */rand.txt
 flutter_**.png
