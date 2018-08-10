@@ -19,6 +19,7 @@ class StatefulListView extends StatefulWidget {
       this.draggableHeight,
       this.padding,
       this.jumpToTop = false,
+      this.animateToTop = false,
       this.canRefresh = false,
       this.onRefresh})
       : super(key: key);
@@ -29,6 +30,7 @@ class StatefulListView extends StatefulWidget {
   final int itemCount;
   final IndexedWidgetBuilder itemBuilder;
   final bool jumpToTop;
+  final bool animateToTop;
   final bool useDraggable;
   final bool canRefresh;
   final Function onRefresh;
@@ -46,7 +48,6 @@ class _StatefulListViewState extends State<StatefulListView> {
   void initState() {
     super.initState();
 
-
     if (widget.jumpToTop)
       scrollController = ScrollController();
     else {
@@ -58,6 +59,12 @@ class _StatefulListViewState extends State<StatefulListView> {
   @override
   Widget build(BuildContext context) {
     if (widget.jumpToTop) scrollController = ScrollController();
+    if (widget.animateToTop) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        scrollController.animateTo(0.0,
+            duration: const Duration(milliseconds: 300), curve: Curves.ease);
+      });
+    }
 
     Widget listView = ListView.builder(
       controller: scrollController,

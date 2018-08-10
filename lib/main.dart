@@ -41,6 +41,7 @@ class TermDictionaryState extends State<TermDictionary>
   TabController tabController;
 
   bool jumpToTop = false;
+  bool animateToTop = false;
   bool isLoading = false;
   double listViewOffset0 = 0.0;
   double listViewOffset1 = 0.0;
@@ -53,7 +54,9 @@ class TermDictionaryState extends State<TermDictionary>
   void initState() {
     super.initState();
     tabController = TabController(length: 3, vsync: this);
-    tabController.addListener(() => setState(() {}));
+    tabController.addListener(() {
+      setState(() {});
+    });
     setState(() => isLoading = true);
     TermDatabase db = TermDatabase.get();
 
@@ -138,7 +141,17 @@ class TermDictionaryState extends State<TermDictionary>
               child: TabBar(
                   indicatorColor: Theme.of(context).accentColor,
                   controller: tabController,
-                  tabs: <Widget>[const Tab0(), const Tab1(), const Tab2()]))),
+                  tabs: <Widget>[
+                    GestureDetector(
+                      child: Container(
+                          color: Theme.of(context).primaryColor,
+                          width: double.infinity,
+                          child: const Tab0()),
+                      onTap: _handleHomeTap,
+                    ),
+                    const Tab1(),
+                    const Tab2()
+                  ]))),
     );
   }
 
@@ -226,6 +239,7 @@ class TermDictionaryState extends State<TermDictionary>
       draggableColor: Theme.of(context).primaryColor,
       draggableHeight: 70.0,
       jumpToTop: jumpToTop,
+      animateToTop: animateToTop,
       canRefresh: textController.text == "",
       onRefresh: _handleRefresh,
     );
@@ -315,13 +329,33 @@ class TermDictionaryState extends State<TermDictionary>
     );
   }
 
+  void _handleHomeTap() {
+    int index = tabController.index;
+
+    if (index == 0) {
+      if (textController.text != "") {
+        _handleSearchClear();
+      }
+      else {
+        setState(() => animateToTop = true);
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          setState(() => animateToTop = false);
+        });
+      }
+    } else {
+      tabController.animateTo(0);
+    }
+
+
+
+  }
+
   Future<Null> _handleRefresh() async {
     TermDatabase db = TermDatabase.get();
     await db.refresh().then((context) => loadTerms(db));
   }
 
   void _handleSearchTyping(String currentText) {
-    //_scrollController.jumpTo(_scrollController.initialScrollOffset);
 
     if (currentText == "") {
       setState(() => terms = fullTermList);
@@ -392,8 +426,6 @@ class TermDictionaryState extends State<TermDictionary>
 
   void _handleSubviewTabChange(int index) {
     if (tabController.index != index)
-      setState(() {
-        tabController.index = index;
-      });
+      tabController.animateTo(index);
   }
 }
