@@ -17,3 +17,5 @@ tech_terms_android.iml
 */key.properties
 */rand.txt
 flutter_**.png
+android/app/google-services.json
+ios/GoogleService-Info.plist
