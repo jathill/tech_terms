@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'package:draggable_scrollbar/draggable_scrollbar.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 import 'package:tech_terms/Term.dart';
 import 'package:tech_terms/database.dart';
@@ -36,6 +37,7 @@ class TermDictionaryState extends State<TermDictionary>
     with SingleTickerProviderStateMixin {
   final _biggerFont = const TextStyle(fontSize: 18.0);
   final textController = TextEditingController();
+  final FirebaseMessaging _firebaseMessaging = new FirebaseMessaging();
 
   BuildContext _scaffoldContext;
   TabController tabController;
@@ -62,6 +64,7 @@ class TermDictionaryState extends State<TermDictionary>
 
     db.init().then((context) {
       loadTerms(db);
+      firebaseSetup();
     });
   }
 
@@ -84,10 +87,25 @@ class TermDictionaryState extends State<TermDictionary>
     });
   }
 
+  void firebaseSetup() {
+    _firebaseMessaging.requestNotificationPermissions();
+    _firebaseMessaging.configure(
+      onMessage: (Map<String, dynamic> message) async {
+        print("onMessage: $message");
+      },
+      onLaunch: (Map<String, dynamic> message) async {
+        print("onLaunch: $message");
+      },
+      onResume: (Map<String, dynamic> message) async {
+        print("onResume: $message");
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final Text appBarTitle = tabController.index == 0
-        ? const Text('TechTerms')
+        ? const Text('TechTerms', style: const TextStyle(fontWeight: FontWeight.bold, letterSpacing: 5.0),)
         : tabController.index == 1 ? const Text('Tags') : const Text('Starred');
 
     final PreferredSize appBarBottom = tabController.index != 0

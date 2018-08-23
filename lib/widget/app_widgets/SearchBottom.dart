@@ -23,14 +23,12 @@ class SearchBottom extends StatelessWidget {
               padding: EdgeInsets.only(left: 15.0, right: 5.0),
               child: const Icon(Icons.search)),
           Expanded(
-              child: SearchBar(
-                  textController: textController,
-                  onType: onType,
-                  onClear: onClear))
-//          Container(
-//              margin: const EdgeInsets.only(left: 10.0, right: 10.0),
-//
-//              )
+              child: Padding(
+                  padding: EdgeInsets.only(right: 20.0),
+                  child: SearchBar(
+                      textController: textController,
+                      onType: onType,
+                      onClear: onClear)))
         ]));
   }
 }
@@ -63,7 +61,7 @@ class _SearchBarState extends State<SearchBar> {
       TextField(
           autocorrect: false,
           controller: widget.textController,
-          decoration: const InputDecoration(hintText: "Search terms..."),
+          decoration: const InputDecoration(hintText: "Search"),
           onChanged: widget.onType),
       clearSearch
     ]);

@@ -6,8 +6,6 @@
 
 build/
 .idea/
-android/
-ios/
 img/
 test/
 
