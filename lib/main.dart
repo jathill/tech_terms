@@ -146,7 +146,7 @@ class TermDictionaryState extends State<TermDictionary>
         ? const Text(
             'TechTerms',
             style: const TextStyle(
-                fontWeight: FontWeight.bold, letterSpacing: 5.0),
+                fontWeight: FontWeight.bold, letterSpacing: 4.0),
           )
         : tabController.index == 1 ? const Text('Tags') : const Text('Starred');
 
