@@ -1,9 +1,11 @@
 // Copyright 2018 Justin Athill
 
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 
+import 'package:app_review/app_review.dart';
 import 'package:draggable_scrollbar/draggable_scrollbar.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
@@ -62,9 +64,14 @@ class TermDictionaryState extends State<TermDictionary>
     setState(() => isLoading = true);
     TermDatabase db = TermDatabase.get();
 
-    db.init().then((context) {
+    db.init().then((_) {
       loadTerms(db);
       _firebaseSetup();
+      if (Platform.isIOS) {
+        AppReview.requestReview.then((onValue) {
+          print(onValue);
+        });
+      }
     });
   }
 

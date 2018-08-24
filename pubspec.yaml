@@ -11,9 +11,11 @@ dependencies:
   firebase_messaging: ^1.0.5
   font_awesome_flutter: ^7.1.0
   http: "^0.11.3+16"
+  launch_review: ^1.0.1
   path_provider: "^0.3.1"
   sqflite: any
   url_launcher: ^3.0.3
+  app_review: ^0.0.6
   draggable_scrollbar:
     git:
       url: git://github.com/jathill/flutter-draggable-scrollbar.git
