@@ -35,9 +35,9 @@ class TermDictionary extends StatefulWidget {
 
 class TermDictionaryState extends State<TermDictionary>
     with SingleTickerProviderStateMixin {
-  final _biggerFont = const TextStyle(fontSize: 18.0);
-  final textController = TextEditingController();
-  final FirebaseMessaging _firebaseMessaging = new FirebaseMessaging();
+  final TextStyle _biggerFont = const TextStyle(fontSize: 18.0);
+  final TextEditingController textController = TextEditingController();
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
 
   BuildContext _scaffoldContext;
   TabController tabController;
@@ -64,7 +64,7 @@ class TermDictionaryState extends State<TermDictionary>
 
     db.init().then((context) {
       loadTerms(db);
-      firebaseSetup();
+      _firebaseSetup();
     });
   }
 
@@ -87,17 +87,55 @@ class TermDictionaryState extends State<TermDictionary>
     });
   }
 
-  void firebaseSetup() {
-    _firebaseMessaging.requestNotificationPermissions();
+  void _firebaseSetup() {
+    const Color buttonColor = Colors.blue;
+    _firebaseMessaging.requestNotificationPermissions(
+        const IosNotificationSettings(sound: true, badge: true, alert: true));
+
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
-        print("onMessage: $message");
+        return showDialog<Null>(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text("New Terms Available",
+                  textAlign: TextAlign.center),
+              contentPadding: const EdgeInsets.all(12.0),
+              content:
+                  Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
+                const Text(
+                  "There are new TechTerms available. Would you like to update?",
+                  textAlign: TextAlign.center,
+                ),
+              ]),
+              actions: <Widget>[
+                FlatButton(
+                  child: Text('Update', style: TextStyle(color: buttonColor)),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    setState(() => isLoading = true);
+                    _handleRefresh()
+                        .then((_) => setState(() => isLoading = false));
+                  },
+                ),
+                FlatButton(
+                  child: Text('Close', style: TextStyle(color: buttonColor)),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          },
+        );
       },
       onLaunch: (Map<String, dynamic> message) async {
-        print("onLaunch: $message");
+        // Terms automatically update on launch
       },
       onResume: (Map<String, dynamic> message) async {
-        print("onResume: $message");
+        setState(() => isLoading = true);
+        _handleRefresh()
+            .then((_) => setState(() => isLoading = false));
       },
     );
   }
@@ -105,7 +143,11 @@ class TermDictionaryState extends State<TermDictionary>
   @override
   Widget build(BuildContext context) {
     final Text appBarTitle = tabController.index == 0
-        ? const Text('TechTerms', style: const TextStyle(fontWeight: FontWeight.bold, letterSpacing: 5.0),)
+        ? const Text(
+            'TechTerms',
+            style: const TextStyle(
+                fontWeight: FontWeight.bold, letterSpacing: 5.0),
+          )
         : tabController.index == 1 ? const Text('Tags') : const Text('Starred');
 
     final PreferredSize appBarBottom = tabController.index != 0
@@ -353,8 +395,7 @@ class TermDictionaryState extends State<TermDictionary>
     if (index == 0) {
       if (textController.text != "") {
         _handleSearchClear();
-      }
-      else {
+      } else {
         setState(() => animateToTop = true);
         WidgetsBinding.instance.addPostFrameCallback((_) {
           setState(() => animateToTop = false);
@@ -363,9 +404,6 @@ class TermDictionaryState extends State<TermDictionary>
     } else {
       tabController.animateTo(0);
     }
-
-
-
   }
 
   Future<Null> _handleRefresh() async {
@@ -374,7 +412,6 @@ class TermDictionaryState extends State<TermDictionary>
   }
 
   void _handleSearchTyping(String currentText) {
-
     if (currentText == "") {
       setState(() => terms = fullTermList);
     } else {
@@ -443,7 +480,6 @@ class TermDictionaryState extends State<TermDictionary>
   }
 
   void _handleSubviewTabChange(int index) {
-    if (tabController.index != index)
-      tabController.animateTo(index);
+    if (tabController.index != index) tabController.animateTo(index);
   }
 }
