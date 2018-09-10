@@ -27,297 +27,314 @@ Built with [flutter](https://flutter.io/)!
 4. Ada
 5. Agile
 6. AJAX
-7. Amazon Web Services
-8. Android
-9. Angular
-10. AngularJS
-11. Ansible
-12. Apache Ant
-13. Apache Cassandra
-14. Apache Cordova
-15. Apache CouchDB
-16. Apache Flex
-17. Apache Hadoop
-18. Apache Hive
-19. Apache HTTP Server
-20. Apache Kafka
-21. Apache Maven
-22. Apache Mesos
-23. Apache MXNet
-24. Apache Spark
-25. Apache Subversion
-26. Apache Tomcat
-27. Apache ZooKeeper
-28. API
-29. Appcelerator Titanium
-30. Application Programming Interface
-31. ARM
-32. Asana
-33. ASP.NET
-34. Assembly Language
-35. Asynchronous JavaScript and XML
-36. Atom
-37. Aurelia
-38. AWK
-39. AWS
-40. Babel
-41. Back-end
-42. Backbone.js
-43. Bash
-44. BASIC
-45. Bitbucket
-46. Blink
-47. Bootstrap
-48. Broccoli.js
-49. C
-50. C#
-51. C++
-52. Caffe
-53. CakePHP
-54. Cascading Style Sheets
-55. Catalyst
-56. CGI
-57. Cheetah
-58. Chef
-59. Chromium
-60. Clojure
-61. CNTK
-62. COBOL
-63. CodeIgniter
-64. CoffeeScript
-65. Common Gateway Interface
-66. Container
-67. Continuous Integration
-68. Couchbase
-69. CSS
-70. D3.js
-71. Dart
-72. Database Sharding
-73. Debian
-74. Declarative Programming
-75. Deep Learning
-76. DirectX
-77. Django
-78. Docker
-79. Domain-Specific Language
-80. doT.js
-81. Drupal
-82. DSL
-83. ECMAScript
-84. ECT
-85. Eiffel
-86. EJS
-87. Elasticsearch
-88. Elixir
-89. Emacs
-90. Ember.js
-91. Erlang
-92. ETL
-93. Express.js
-94. Extensible Hypertext Markup Language
-95. Extensible Markup Language
-96. Extract, Transform, Load
-97. File Transfer Protocol
-98. Firebase
-99. Firefox
-100. Flask
-101. Flow
-102. Flutter
-103. Fortran
-104. Foundation
-105. Front-end
-106. FTP
-107. Functional Language
-108. Garbage Collection
-109. GCP
-110. Gecko
-111. Git
-112. GitHub
-113. GNU nano
-114. Go
-115. Google Chrome
-116. Google Cloud Platform
-117. Google Web Toolkit
-118. Gradle
-119. GraphQL
-120. Grunt
-121. gulp.js
-122. GWT
-123. Hack
-124. Handlebars.js
-125. Haskell
-126. Heroku
-127. Hibernate
-128. Homebrew
-129. HTML
-130. HTTP
-131. Hypertext Markup Language
-132. Hypertext Transfer Protocol
-133. Hypervisor
-134. IDE
-135. Imperative Programming
-136. Integrated Development Environment
-137. IntelliJ IDEA
-138. Internet Explorer
-139. Ionic
-140. iOS
-141. Java
-142. JavaScript
-143. JavaScript XML
-144. JavaServer Faces
-145. Jenkins
-146. Jira
-147. JIT
-148. jQuery
-149. JSF
-150. JSX
-151. Just-in-time Compilation
-152. Jython
-153. Kali Linux
-154. Keras
-155. Knockout
-156. Kotlin
-157. Kubernetes
-158. LAMP Stack
-159. Laravel
-160. LaTeX
-161. Less
-162. Linux
-163. Lisp
-164. LLVM
-165. Lodash
-166. Lua
-167. Machine Learning
-168. macOS
-169. MapReduce
-170. MariaDB
-171. Markup Language
-172. Materialize
-173. MATLAB
-174. MEAN Stack
-175. Memcached
-176. Mercurial
-177. Meteor
-178. Microsoft Azure
-179. Microsoft Cognitive Toolkit
-180. Microsoft Edge
-181. Microsoft SQL Server
-182. Model-View-Controller
-183. Modernizr
-184. Mojolicious
-185. MongoDB
-186. Mustache
-187. MVC
-188. MySQL
-189. Neural Network
-190. Next.js
-191. Nginx
-192. Node.js
-193. NoSQL
-194. npm
-195. NumPy
-196. Object Oriented Programming
-197. Objective-C
-198. OCaml
-199. OOP
-200. OpenCV
-201. OpenGL
-202. Opera
-203. PaddlePaddle
-204. Pascal
-205. Perl
-206. Phaser
-207. PHP
-208. pip
-209. Platform.js
-210. Polyfill
-211. Polymer
-212. PostCSS
-213. PostgreSQL
-214. Procedural Language
-215. Progressive Web Application
-216. PWA
-217. Python
-218. PyTorch
-219. R
-220. RabbitMQ
-221. RDBMS
-222. React
-223. React Native
-224. Red Hat Enterprise Linux
-225. Redis
-226. Redux
-227. Regex
-228. Regular Expression
-229. Relational Database Management System
-230. Representational State Transfer
-231. REST
-232. RHEL
-233. Riot.js
-234. Ruby
-235. Ruby on Rails
-236. Rust
-237. RxJS
-238. Safari
-239. Sass
-240. Scala
-241. Scalable Vector Graphics
-242. Scrum
-243. SDK
-244. Secure Shell
-245. Secure Sockets Layer
-246. Shim
-247. Skia
-248. Smalltalk
-249. Software Development Kit
-250. Splunk
-251. Spring Framework
-252. SQL
-253. SSH
-254. SSL
-255. Structured Query Language
-256. Stylus
-257. Sublime Text
-258. SVG
-259. Swift
-260. Symfony
-261. TensorFlow
-262. Terraform
-263. Theano
-264. TLS
-265. Torch
-266. Transport Layer Security
-267. Trello
-268. TypeScript
-269. Ubuntu
-270. Underscore.js
-271. Unity
-272. Universal Windows Platform
-273. Unix
-274. Unreal Engine
-275. UWP
-276. Vagrant
-277. Varnish
-278. vi
-279. Vim
-280. VirtualBox
-281. Visual Basic
-282. Visual Studio Code
-283. Vitess
-284. VSC
-285. Vue.js
-286. Vulkan
-287. W3C
-288. Web Components
-289. WebAssembly
-290. WebKit
-291. Webpack
-292. WordPress
-293. World Wide Web Consortium
-294. XHTML
-295. XML
-296. XML User Interface Language
-297. XUL
-298. YAML
-299. Yarn
-300. Zend Framework
+7. Amazon Redshift
+8. Amazon SageMaker
+9. Amazon Web Services
+10. Android
+11. Angular
+12. AngularJS
+13. Ansible
+14. Apache Airflow
+15. Apache Ant
+16. Apache Beam
+17. Apache Cassandra
+18. Apache Cordova
+19. Apache CouchDB
+20. Apache Flex
+21. Apache Hadoop
+22. Apache Hive
+23. Apache HTTP Server
+24. Apache Kafka
+25. Apache Maven
+26. Apache Mesos
+27. Apache MXNet
+28. Apache Spark
+29. Apache Subversion
+30. Apache Tomcat
+31. Apache ZooKeeper
+32. API
+33. Appcelerator Titanium
+34. Application Programming Interface
+35. ARM
+36. Asana
+37. ASP.NET
+38. Assembly Language
+39. Asynchronous JavaScript and XML
+40. Atom
+41. Aurelia
+42. AWK
+43. AWS
+44. Babel
+45. Back-end
+46. Backbone.js
+47. Bash
+48. BASIC
+49. Bitbucket
+50. Blink
+51. Bootstrap
+52. Broccoli.js
+53. C
+54. C#
+55. C++
+56. Caffe
+57. CakePHP
+58. Cascading Style Sheets
+59. Catalyst
+60. Celery
+61. CGI
+62. Cheetah
+63. Chef
+64. Chromium
+65. CircleCI
+66. Clojure
+67. Cloud AutoML
+68. CNTK
+69. COBOL
+70. CodeIgniter
+71. CoffeeScript
+72. Common Gateway Interface
+73. Container
+74. Continuous Delivery
+75. Continuous Integration
+76. Couchbase
+77. CSS
+78. D3.js
+79. Dart
+80. Database Sharding
+81. Debian
+82. Declarative Programming
+83. Deep Learning
+84. DirectX
+85. Django
+86. Docker
+87. Domain-Specific Language
+88. doT.js
+89. Drupal
+90. DSL
+91. ECMAScript
+92. ECT
+93. Eiffel
+94. EJS
+95. Elasticsearch
+96. Elixir
+97. Emacs
+98. Ember.js
+99. Erlang
+100. ETL
+101. Express.js
+102. Extensible Hypertext Markup Language
+103. Extensible Markup Language
+104. Extract, Transform, Load
+105. File Transfer Protocol
+106. Firebase
+107. Firefox
+108. Flask
+109. Flow
+110. Flutter
+111. Fortran
+112. Foundation
+113. Front-end
+114. FTP
+115. Functional Language
+116. Garbage Collection
+117. gcc
+118. GCP
+119. Gecko
+120. Git
+121. GitHub
+122. GNU Compiler Collection
+123. GNU nano
+124. Go
+125. Google Chrome
+126. Google Cloud Platform
+127. Google Web Toolkit
+128. Gradle
+129. GraphQL
+130. Grunt
+131. gulp.js
+132. GWT
+133. Hack
+134. Hadoop Distributed File System
+135. Handlebars.js
+136. Haskell
+137. HDFS
+138. Heroku
+139. Hibernate
+140. Homebrew
+141. HTML
+142. HTTP
+143. Hypertext Markup Language
+144. Hypertext Transfer Protocol
+145. Hypervisor
+146. IDE
+147. Imperative Programming
+148. Integrated Development Environment
+149. IntelliJ IDEA
+150. Internet Explorer
+151. Ionic
+152. iOS
+153. Java
+154. JavaScript
+155. JavaScript XML
+156. JavaServer Faces
+157. Jenkins
+158. Jira
+159. JIT
+160. jQuery
+161. JSF
+162. JSX
+163. Just-in-time Compilation
+164. Jython
+165. Kali Linux
+166. Keras
+167. Knockout
+168. Kotlin
+169. Kubernetes
+170. LAMP Stack
+171. Laravel
+172. LaTeX
+173. Less
+174. LightGBM
+175. Linux
+176. Lisp
+177. LLVM
+178. Lodash
+179. Lua
+180. Machine Learning
+181. macOS
+182. MapReduce
+183. MariaDB
+184. Markup Language
+185. Materialize
+186. MATLAB
+187. MEAN Stack
+188. Memcached
+189. Mercurial
+190. Meteor
+191. Microsoft Azure
+192. Microsoft Cognitive Toolkit
+193. Microsoft Edge
+194. Microsoft SQL Server
+195. Model-View-Controller
+196. Modernizr
+197. Mojolicious
+198. MongoDB
+199. Mustache
+200. MVC
+201. MySQL
+202. Neural Network
+203. Next.js
+204. Nginx
+205. Node.js
+206. NoSQL
+207. npm
+208. NumPy
+209. Object Oriented Programming
+210. Objective-C
+211. OCaml
+212. OOP
+213. OpenCV
+214. OpenGL
+215. Opera
+216. PaddlePaddle
+217. Pascal
+218. Perl
+219. Phaser
+220. PHP
+221. pip
+222. Platform.js
+223. Polyfill
+224. Polymer
+225. PostCSS
+226. PostgreSQL
+227. Procedural Language
+228. Progressive Web Application
+229. PWA
+230. Python
+231. PyTorch
+232. R
+233. RabbitMQ
+234. RDBMS
+235. React
+236. React Native
+237. Red Hat Enterprise Linux
+238. Redis
+239. Redux
+240. Regex
+241. Regular Expression
+242. Relational Database Management System
+243. Representational State Transfer
+244. REST
+245. RHEL
+246. Riot.js
+247. Ruby
+248. Ruby on Rails
+249. Rust
+250. RxJS
+251. Safari
+252. Sass
+253. Scala
+254. Scalable Vector Graphics
+255. scikit-learn
+256. Scrum
+257. SDK
+258. Secure Shell
+259. Secure Sockets Layer
+260. Shim
+261. Skia
+262. Smalltalk
+263. Software Development Kit
+264. Spinnaker
+265. Splunk
+266. Spring Framework
+267. SQL
+268. SSH
+269. SSL
+270. Structured Query Language
+271. Stylus
+272. Sublime Text
+273. SVG
+274. Swift
+275. Symfony
+276. Tableau
+277. TensorFlow
+278. Terraform
+279. Theano
+280. TLS
+281. Torch
+282. Transport Layer Security
+283. Travis CI
+284. Trello
+285. TypeScript
+286. Ubuntu
+287. Underscore.js
+288. Unity
+289. Universal Windows Platform
+290. Unix
+291. Unreal Engine
+292. UWP
+293. Vagrant
+294. Varnish
+295. vi
+296. Vim
+297. VirtualBox
+298. Visual Basic
+299. Visual Studio Code
+300. Vitess
+301. VSC
+302. Vue.js
+303. Vulkan
+304. W3C
+305. Web Components
+306. WebAssembly
+307. WebKit
+308. Webpack
+309. WordPress
+310. World Wide Web Consortium
+311. XHTML
+312. XML
+313. XML User Interface Language
+314. XUL
+315. YAML
+316. Yarn
+317. Zend Framework
